@@ -204,7 +204,7 @@ function Vector(x, y) {
   }
 
   this.subtract = function(v) {
-    return new Vector(this.x - v.x, this.y + v.y)
+    return new Vector(this.x - v.x, this.y - v.y)
   }
 
   this.divided_by_integer = function(i) {
@@ -229,22 +229,23 @@ function SiteLine(source, dest) {
   const ds = dest.subtract(source).divided_by_integer(segments)
 
   let prev = source
-  let lines = []
+  let lines = [source]
   for(let x = 0; x < segments; x++) {
-    prev = prev.add(ds).add(random_noise(10, 10))
+    prev = prev.add(ds).add(random_noise(50, 50))
     lines.push(prev)
   }
+  lines.push(dest)
 
   prev = source
-  for(let i = 0; i < segments; i++) {
-    line(source.x, source.y, lines[i].x, lines[i].y)
+  for(let i = 0; i < lines.length - 1; i++) {
+    line(lines[i].x, lines[i].y, lines[i + 1].x, lines[i + 1].y)
     prev = lines[i]
   }
 
   stroke(255, 0, 0)
   strokeWeight(4)
   // line(source.x, source.y,
-  //      dest.x, dest.y)
+  // dest.x, dest.y)
 }
 
 function RootStratum(_height, position, websites, history) {
