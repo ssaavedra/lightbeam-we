@@ -165,6 +165,7 @@ const store = {
       favicon: website.faviconUrl || '',
       firstPartyHostnames: website.firstPartyHostnames || false,
       firstParty: !!website.firstParty,
+      lastRequestTime: website.lastRequestTime,
       thirdParties: []
     };
     if ('thirdPartyHostnames' in website) {
