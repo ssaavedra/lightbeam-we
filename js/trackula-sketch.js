@@ -36,8 +36,8 @@ function random_mushroom_image() {
   return mushroom_images[0]
 }
 
-function Mushroot(mushroom_width) {
-  let Settings = {
+function Mushroot(beginX, beginY, settings) {
+  let Settings = Object.assign({
     branchColor: '#FFFFFF',
     nest: 5,
     startBranchLength: 130,
@@ -49,7 +49,7 @@ function Mushroot(mushroom_width) {
     rotationcenter: [-0.3, 0.3],
     rightRotationRate: [0.6, 0.8],
     leftRotationRate: [0.6, 0.8]
-  }
+  }, settings)
 
   function branch(beginX, beginY, length, nest) {
     // --- decrement nest ---
@@ -90,12 +90,12 @@ function Mushroot(mushroom_width) {
     translate(-endX, -endY);
   }
 
+
   this.show = function () {
     push()
-    translate(mushroom_width / 2, 0)
     stroke(255, 255, 255)
     strokeWeight(2)
-    branch(0, 0, Settings.startBranchLength, Settings.nest)
+    branch(beginX, beginY, Settings.startBranchLength, Settings.nest)
     pop()
   }
 }
@@ -239,6 +239,10 @@ function SiteLine(source, dest) {
   prev = source
   for(let i = 0; i < lines.length - 1; i++) {
     line(lines[i].x, lines[i].y, lines[i + 1].x, lines[i + 1].y)
+    push()
+    let r = new Mushroot(lines[i].x, lines[i].y, {startBranchLength: 40, nest: 3})
+    r.show()
+    pop()
     prev = lines[i]
   }
 
