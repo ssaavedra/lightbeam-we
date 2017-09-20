@@ -2,23 +2,39 @@
 
 /* eslint-disable */
 
+/**
+ * Basic assertion library
+ */
 function assert(x) {
   if(!x) {
-    console.log("ASERTION FAILED:", x)
+    console.error("ASERTION FAILED:", x)
   }
+}
+
+/**
+ * Displaces a position to a delta. We use this so that we don't
+ * depend on transform to draw things (and thus we can know where to
+ * draw lines between things).
+ */
+function displace(_position, delta) {
+  const position = Object.assign({x: 0, y: 0}, _position)
+  const dx = delta.x || 0
+  const dy = delta.y || 0
+
+  return {x: position.x + dx, y: position.y + dy}
 }
 
 let content = null
+let mushroom_images = []
 
-function Mushroom(mushroom_width) {
-  this.show = function () {
-    stroke(255, 255, 255)
-    fill(255, 255, 255)
-    strokeWeight(40)
-    point(mushroom_width / 2, -100)
-  }
+function preload() {
+  let img = loadImage("images/mushroom-1.png")
+  mushroom_images.push(img)
 }
 
+function random_mushroom_image() {
+  return mushroom_images[0]
+}
 
 function Mushroot(mushroom_width) {
   let Settings = {
@@ -121,11 +137,6 @@ class History {
   }
 }
 
-function ThirdParty(hostname, history) {
-  this.height = history.first_of.get(hostname).length
-  this.show = function() {
-  }
-}
 
 function stratify(history) {
   const first_map = Array.from(history.first_of)
@@ -144,44 +155,127 @@ function stratify(history) {
   return root_strata
 }
 
-function ThirdRoot(website, _height) {
-  this.show = function() {
-    strokeWeight(8 * (_height + 1))
-    stroke(255, 255, 0)
-    point(0, 0)
+let defaultSettings = {
+  strokeWeight: 40,
+  stroke: 'rgba(255, 255, 0, 1)',
+  lineStroke: 'rgba(255, 0, 255, 0.3)',
+  lineStrokeWeight: 4,
+}
+
+function Site(position, website, history, settings) {
+  this.position = position
+  this.website = website
+  this.history = history
+  this.height = settings.height
+  this.visible = settings.visible || settings.height != 1
+  this.settings = Object.assign(defaultSettings, settings.settings)
+
+  this.show = function(base_stratum) {
+    if(!this.visible) return
+
+    if(this.height > 0) {
+      const my_first = this.history.first_of.get(this.website).map(e => e.hostname)
+      const nodes_to_connect = base_stratum.roots.filter(
+	node => my_first.includes(node.website)
+      )
+
+      nodes_to_connect.forEach(node => {
+	strokeWeight(this.settings.lineStrokeWeight)
+	stroke(this.settings.lineStroke)
+	SiteLine(this.position, node.position)
+      })
+
+      stroke(this.settings.stroke)
+      strokeWeight(this.settings.strokeWeight)
+      point(this.position.x, this.position.y)
+    } else {
+      image(random_mushroom_image(), this.position.x - (150 / 2), this.position.y - 150,
+	    150, 150)
+    }
   }
 }
 
-function RootStratum(_height, websites, history) {
+function Vector(x, y) {
+  this.x = x
+  this.y = y
+
+  this.add = function(v) {
+    return new Vector(this.x + v.x, this.y + v.y)
+  }
+
+  this.subtract = function(v) {
+    return new Vector(this.x - v.x, this.y + v.y)
+  }
+
+  this.divided_by_integer = function(i) {
+    return new Vector(this.x / i, this.y / i)
+  }
+
+  this.multiplied_by_integer = function(i) {
+    return new Vector(this.x * i, this.y * i)
+  }
+}
+
+function random_noise(x, y) {
+  return new Vector(random(0, x), random(0, y))
+}
+
+function SiteLine(source, dest) {
+  const segments = 4
+
+  source = new Vector(source.x, source.y)
+  dest = new Vector(dest.x, dest.y)
+
+  const ds = dest.subtract(source).divided_by_integer(segments)
+
+  let prev = source
+  let lines = []
+  for(let x = 0; x < segments; x++) {
+    prev = prev.add(ds).add(random_noise(10, 10))
+    lines.push(prev)
+  }
+
+  prev = source
+  for(let i = 0; i < segments; i++) {
+    line(source.x, source.y, lines[i].x, lines[i].y)
+    prev = lines[i]
+  }
+
+  stroke(255, 0, 0)
+  strokeWeight(4)
+  // line(source.x, source.y,
+  //      dest.x, dest.y)
+}
+
+function RootStratum(_height, position, websites, history) {
+  const padding = width / websites.length
+
+  this.position = position
   this.height = _height
   this.websites = websites
-  this.roots = this.websites.map(website => new ThirdRoot(website, _height))
-  this.show = function() {
-    push()
-    translate(width / this.roots.length / 2, 0)
-    this.roots.forEach(
-      (root, num) => {
-	root.show()
-	translate(width / this.roots.length, 0)
-      }
-    )
-    pop()
+  this.roots = this.websites.map(
+    (website, idx) =>
+      new Site(displace(position, {x: padding / 2 + idx * padding}), website, history, {
+	settings: {},
+	height: _height
+      }))
+  this.show = function(base_stratum) {
+    this.roots.forEach(root => root.show(base_stratum))
   }
 }
 
-function Underworld(history) {
+function Underworld(history, position) {
+  this.position = Object.assign({x: 0, y: 0}, position)
+  const padding = 150
+
   this.strata = stratify(history).map(
-    (stratum, index) => new RootStratum(index, stratum, history)
+    (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, history)
   )
 
   this.show = function() {
-    push()
-
     for(let stratum = 0; stratum < this.strata.length; stratum++) {
-      this.strata[stratum].show()
-      translate(0, 100)
+      this.strata[stratum].show(this.strata[0])
     }
-    pop()
   }
 }
 
@@ -198,7 +292,6 @@ async function setup() {
 
   push()
   translate(0, height / 4)
-  push()
 
   stroke(255, 255, 255)
   fill(255, 255, 255)
@@ -206,20 +299,14 @@ async function setup() {
 
   let mushroom_width = width / num_mushrooms
 
-  for(let step = 0; step < num_mushrooms; step++) {
-    let m = new Mushroom(mushroom_width)
-    m.show()
-    translate(mushroom_width, 0)
-  }
-  pop()
 
-  let underworld = new Underworld(history)
+  let underworld = new Underworld(history, {y: 0})
   underworld.show()
 
   push()
   for(let step = 0; step < num_mushrooms; step++) {
     let t = new Mushroot(mushroom_width)
-    t.show()
+    // t.show()
     translate(mushroom_width, 0)
   }
 
