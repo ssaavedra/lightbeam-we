@@ -311,6 +311,7 @@ function SiteLine(source, dest, height, highlighted) {
 
   let prev = source
 
+  this.highlighted = highlighted
   this.lines = [source]
   for(let x = 0; x < segments; x++) {
     prev = prev.add(dds)
@@ -320,12 +321,15 @@ function SiteLine(source, dest, height, highlighted) {
   }
   this.lines.push(dest)
 
+  this.highlight = function(value) {
+    this.highlighted = value
+  }
+
   this.show = function () {
     const lines = this.lines
 
-    stroke(lineColors[height][highlighted + 0])
-    strokeWeight(4)
-    console.log("Showing line at height: ", height, lineColors[height][highlighted + 0])
+    stroke(lineColors[height][this.highlighted + 0])
+    strokeWeight(1 + this.highlighted * 10)
 
     let prev = source
     for(let i = 0; i < lines.length - 1; i++) {
@@ -357,7 +361,7 @@ function RootStratum(_height, position, websites, base_stratum, history) {
 	base_stratum: base_stratum,
       }))
   this.show = function() {
-    this.roots.forEach(root => root.show())
+    this.roots.forEach(site => site.show())
   }
 }
 
@@ -373,48 +377,53 @@ function Underworld(history, position) {
   )
 
   this.show = function() {
-    for(let stratum = 0; stratum < this.strata.length; stratum++) {
-      this.strata[stratum].show(this.strata[0])
+    for(let stratum = this.strata.length - 1; stratum >= 0; stratum--) {
+      this.strata[stratum].show()
     }
   }
 }
 
 
+let underworld
+let sites = []
+let num_mushrooms = 6
+
 async function setup() {
   content = await storeChild.getAll()
-
-  let num_mushrooms = 5
 
   let history = new History(num_mushrooms, content)
 
   createCanvas(window.windowWidth - 50, window.windowHeight * 1.5)
   background(0)
-
   push()
-  translate(0, height / 4)
+
+  let placement = height / 4
 
   stroke(255, 255, 255)
   fill(255, 255, 255)
-  line(0, 0, width, 0)
-
+  rect(0, 0, width, 40)
   let mushroom_width = width / num_mushrooms
-
-
-  let underworld = new Underworld(history, {y: 0})
+  line(0, placement, width, placement)
+  underworld = new Underworld(history, {y: placement})
   underworld.show()
-
-  push()
-  for(let step = 0; step < num_mushrooms; step++) {
-    let t = new Mushroot(mushroom_width)
-    // t.show()
-    translate(mushroom_width, 0)
-  }
-
   pop()
 
-  pop()
+  noLoop()
 }
 
 function draw() {
-  
+  clear()
+  background(0)
+
+  push()
+  stroke(255, 255, 255)
+  fill(255, 255, 255)
+  rect(0, 0, width, height / 4)
+  let mushroom_width = width / num_mushrooms
+  line(0, height / 4, width, height / 4)
+  if(underworld)
+    underworld.show()
+  pop()
+}
+
 }
