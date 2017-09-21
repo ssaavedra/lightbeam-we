@@ -24,6 +24,38 @@ function displace(_position, delta) {
   return {x: position.x + dx, y: position.y + dy}
 }
 
+
+function Vector() {
+  this.d = Array.from(arguments)
+  this.x = this.d[0]
+  this.y = this.d[1]
+
+  this.add = function(v) {
+    return new Vector(this.x + v.x, this.y + v.y)
+  }
+
+  this.subtract = function(v) {
+    return new Vector(this.x - v.x, this.y - v.y)
+  }
+
+  this.divided_by_integer = function(i) {
+    return new Vector(this.x / i, this.y / i)
+  }
+
+  this.multiplied_by_integer = function(i) {
+    return new Vector(this.x * i, this.y * i)
+  }
+
+  this.norm = function(n) {
+    if(typeof n === "undefined") n = 2
+    return Math.pow(
+      this.d.reduce((sum, value) => {
+	return sum + Math.pow(value, n)
+      }, 0),
+      1/n)
+  }
+}
+
 let content = null
 let mushroom_images = []
 
@@ -200,27 +232,6 @@ function Site(position, website, history, settings) {
   }
 }
 
-function Vector() {
-  this.d = Array.from(arguments)
-  this.x = this.d[0]
-  this.y = this.d[1]
-
-  this.add = function(v) {
-    return new Vector(this.x + v.x, this.y + v.y)
-  }
-
-  this.subtract = function(v) {
-    return new Vector(this.x - v.x, this.y - v.y)
-  }
-
-  this.divided_by_integer = function(i) {
-    return new Vector(this.x / i, this.y / i)
-  }
-
-  this.multiplied_by_integer = function(i) {
-    return new Vector(this.x * i, this.y * i)
-  }
-}
 
 function random_noise(x, y) {
   return new Vector(random(0, x), random(0, y))
