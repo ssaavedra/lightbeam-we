@@ -195,12 +195,16 @@ let defaultSettings = {
 }
 
 function Site(position, website, history, settings) {
-  this.position = position
+  sites.push(this)
   this.website = website
   this.history = history
   this.height = settings.height
   this.highlighted = settings.highlighted || false
   this.visible = settings.visible || settings.height != 1
+
+  const noise = this.height > 1 ? random_noise(30, 100) : new Vector(0, 0)
+  this.position = new Vector(position.x, position.y).add(noise)
+
   this.settings = Object.assign(defaultSettings, settings.settings)
 
   const base_roots = (settings.base_stratum || {roots: []}).roots
@@ -215,6 +219,26 @@ function Site(position, website, history, settings) {
     stroke(this.settings.lineStroke)
     return new SiteLine(this.position, node.position, this.height, this.highlighted)
   })
+
+  this.isAtPoint = function(x, y) {
+    return this.visible && (this.distanceTo(x, y) < 20)
+  }
+
+  this.distanceTo = function(x, y) {
+    if (!this.visible) return NaN
+    return this.position.subtract(new Vector(x, y)).norm(2)
+  }
+
+  this.highlight = function(value, recursive) {
+    if(!recursive) {
+      sites.map(site => site.highlight(!value, true))
+    }
+
+    this.highlighted = value
+    this.lines.forEach(line => {
+      line.highlight(value)
+    })
+  }
 
   this.show = function() {
     if(!this.visible) return
