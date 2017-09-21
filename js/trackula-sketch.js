@@ -167,24 +167,29 @@ function Site(position, website, history, settings) {
   this.website = website
   this.history = history
   this.height = settings.height
+  this.highlighted = settings.highlighted || false
   this.visible = settings.visible || settings.height != 1
   this.settings = Object.assign(defaultSettings, settings.settings)
 
-  this.show = function(base_stratum) {
+  const base_roots = (settings.base_stratum || {roots: []}).roots
+  const my_first = (this.history.first_of.get(this.website) || []).map(e => e.hostname)
+
+  const nodes_to_connect = base_roots.filter(
+    node => my_first.includes(node.website)
+  )
+
+  this.lines = nodes_to_connect.map(node => {
+    strokeWeight(this.settings.lineStrokeWeight)
+    stroke(this.settings.lineStroke)
+    return new SiteLine(this.position, node.position, this.height, this.highlighted)
+  })
+
+  this.show = function() {
     if(!this.visible) return
 
+    this.lines.forEach(line => line.show())
+
     if(this.height > 0) {
-      const my_first = this.history.first_of.get(this.website).map(e => e.hostname)
-      const nodes_to_connect = base_stratum.roots.filter(
-	node => my_first.includes(node.website)
-      )
-
-      nodes_to_connect.forEach(node => {
-	strokeWeight(this.settings.lineStrokeWeight)
-	stroke(this.settings.lineStroke)
-	SiteLine(this.position, node.position)
-      })
-
       stroke(this.settings.stroke)
       strokeWeight(this.settings.strokeWeight)
       point(this.position.x, this.position.y)
@@ -195,9 +200,10 @@ function Site(position, website, history, settings) {
   }
 }
 
-function Vector(x, y) {
-  this.x = x
-  this.y = y
+function Vector() {
+  this.d = Array.from(arguments)
+  this.x = this.d[0]
+  this.y = this.d[1]
 
   this.add = function(v) {
     return new Vector(this.x + v.x, this.y + v.y)
@@ -220,8 +226,18 @@ function random_noise(x, y) {
   return new Vector(random(0, x), random(0, y))
 }
 
+let lineColors = [
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(45, 45, 45, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(130, 130, 130, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
+]
 
-function SiteLine(source, dest) {
+function SiteLine(source, dest, height, highlighted) {
   source = new Vector(source.x, source.y)
   dest = new Vector(dest.x, dest.y)
 
@@ -232,35 +248,40 @@ function SiteLine(source, dest) {
   const noise_amount = 0.02 * distance
 
   let prev = source
-  let lines = [source]
+
+  this.lines = [source]
   for(let x = 0; x < segments; x++) {
     prev = prev.add(dds)
-    lines.push(prev.add(random_noise(noise_amount, noise_amount))
-	      )
+    this.lines.push(
+      prev.add(random_noise(noise_amount, noise_amount))
+    )
   }
-  lines.push(dest)
+  this.lines.push(dest)
 
-  prev = source
-  for(let i = 0; i < lines.length - 1; i++) {
-    line(lines[i].x, lines[i].y, lines[i + 1].x, lines[i + 1].y)
-    point(lines[i].x, lines[i].y)
-    point(lines[i + 1].x, lines[i + 1].y)
-    push()
-    translate(lines[i].x, lines[i].y)
-    rotate(random(-PI/3, PI/3))
-    let r = new Mushroot(0, 0, {startBranchLength: 20, nest: min(3, max(segments, 8))})
-    // r.show()
-    pop()
-    prev = lines[i]
+  this.show = function () {
+    const lines = this.lines
+
+    stroke(lineColors[height][highlighted + 0])
+    strokeWeight(4)
+    console.log("Showing line at height: ", height, lineColors[height][highlighted + 0])
+
+    let prev = source
+    for(let i = 0; i < lines.length - 1; i++) {
+      line(lines[i].x, lines[i].y, lines[i + 1].x, lines[i + 1].y)
+      point(lines[i].x, lines[i].y)
+      point(lines[i + 1].x, lines[i + 1].y)
+      push()
+      translate(lines[i].x, lines[i].y)
+      rotate(random(-PI/3, PI/3))
+      let r = new Mushroot(0, 0, {startBranchLength: 20, nest: min(3, max(segments, 8))})
+      // r.show()
+      pop()
+      prev = lines[i]
+    }
   }
-
-  stroke(255, 0, 0)
-  strokeWeight(4)
-  // line(source.x, source.y,
-  // dest.x, dest.y)
 }
 
-function RootStratum(_height, position, websites, history) {
+function RootStratum(_height, position, websites, base_stratum, history) {
   const padding = width / websites.length
 
   this.position = position
@@ -270,19 +291,23 @@ function RootStratum(_height, position, websites, history) {
     (website, idx) =>
       new Site(displace(position, {x: padding / 2 + idx * padding}), website, history, {
 	settings: {},
-	height: _height
+	height: _height,
+	base_stratum: base_stratum,
       }))
-  this.show = function(base_stratum) {
-    this.roots.forEach(root => root.show(base_stratum))
+  this.show = function() {
+    this.roots.forEach(root => root.show())
   }
 }
 
 function Underworld(history, position) {
   this.position = Object.assign({x: 0, y: 0}, position)
-  const padding = 350
+  const padding = 250
 
-  this.strata = stratify(history).map(
-    (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, history)
+  const strata = stratify(history)
+  const base_stratum = new RootStratum(0, this.position, strata[0], null, history)
+
+  this.strata = strata.map(
+    (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, base_stratum, history)
   )
 
   this.show = function() {
