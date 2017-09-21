@@ -426,4 +426,19 @@ function draw() {
   pop()
 }
 
+function mouseClicked() {
+  // Find whether we are over a tracker point
+  stroke(255, 255, 255)
+  strokeWeight(10)
+  // ellipse(mouseX, mouseY, 10)
+  const matching = sites
+	.filter(site => site.isAtPoint(mouseX, mouseY))
+	.sort((a, b) => b.distanceTo(mouseX, mouseY) - a.distanceTo(mouseX, mouseY))
+	.reverse()
+  matching.map((site, idx) => ellipse(site.position.x, site.position.y, idx * 4))
+  if(matching.length) {
+    matching[0].highlight(true)
+    draw()
+    matching[0].show()
+  }
 }
