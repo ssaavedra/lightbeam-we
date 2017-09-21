@@ -254,12 +254,31 @@ function Site(position, website, history, settings) {
     this.lines.forEach(line => line.show())
 
     if(this.height > 0) {
-      stroke(this.settings.stroke)
+      // stroke(this.settings.stroke)
+      stroke(lineColors[this.height][2])
       strokeWeight(this.settings.strokeWeight)
+      strokeWeight(2)
+      fill(lineColors[this.height][2])
+      ellipse(this.position.x, this.position.y, this.height * 10)
       point(this.position.x, this.position.y)
+      fill(255)
+      textSize(8)
+      strokeWeight(2)
+      text(this.website, this.position.x, this.position.y)
     } else {
-      image(random_mushroom_image(), this.position.x - (150 / 2), this.position.y - 150,
-	    150, 150)
+      const mush_width = 150
+      const mush_height = 375
+      image(
+	random_mushroom_image(),
+	this.position.x - (mush_width / 2),
+	this.position.y - mush_height,
+	mush_width,
+	mush_height
+      )
+      fill(0)
+      textSize(16)
+      strokeWeight(2)
+      text(this.website, this.position.x, this.position.y)
     }
   }
 }
@@ -272,12 +291,12 @@ function random_noise(x, y) {
 let lineColors = [
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(45, 45, 45, 1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(130, 130, 130, 1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(60, 60, 0, 1)'],
+  ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(130, 130, 130, 1)'],
+  ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
+  ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
 ]
 
 function SiteLine(source, dest, height, highlighted) {
@@ -286,7 +305,7 @@ function SiteLine(source, dest, height, highlighted) {
 
   const ds = dest.subtract(source)
   const distance = Math.sqrt(Math.pow(ds.x, 2) + Math.pow(ds.y, 2))
-  const segments = max(1, parseInt(distance / 80))
+  const segments = max(1, parseInt(distance / 100))
   const dds = ds.divided_by_integer(segments)
   const noise_amount = 0.02 * distance
 
