@@ -279,7 +279,7 @@ function RootStratum(_height, position, websites, history) {
 
 function Underworld(history, position) {
   this.position = Object.assign({x: 0, y: 0}, position)
-  const padding = 150
+  const padding = 350
 
   this.strata = stratify(history).map(
     (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, history)
