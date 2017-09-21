@@ -60,8 +60,16 @@ let content = null
 let mushroom_images = []
 
 function preload() {
-  let img = loadImage("images/mushroom-1.png")
-  mushroom_images.push(img)
+  function pad(num, size){ return ('000000000' + num).substr(-size); }
+  // mushroom_images.push(loadImage("images/mushroom-1.png"))
+  // mushroom_images.push(loadImage("images/mushroom-2.png"))
+  // mushroom_images.push(loadImage("images/mushroom-3.svg"))
+  // mushroom_images.push(loadImage("images/mushroom-4.png"))
+  // mushroom_images.push(loadImage("images/mushroom-5.svg"))
+  // mushroom_images.push(loadImage("images/mushroom-6.png"))
+  for(let i = 1; i <= 13; i++) {
+    mushroom_images.push(loadImage("images/mushroom-" + pad(i, 2) + ".png"))
+  }
 }
 
 function random_mushroom_image() {
