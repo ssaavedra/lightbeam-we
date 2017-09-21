@@ -220,19 +220,23 @@ function random_noise(x, y) {
   return new Vector(random(0, x), random(0, y))
 }
 
-function SiteLine(source, dest) {
-  const segments = 4
 
+function SiteLine(source, dest) {
   source = new Vector(source.x, source.y)
   dest = new Vector(dest.x, dest.y)
 
-  const ds = dest.subtract(source).divided_by_integer(segments)
+  const ds = dest.subtract(source)
+  const distance = Math.sqrt(Math.pow(ds.x, 2) + Math.pow(ds.y, 2))
+  const segments = max(1, parseInt(distance / 80))
+  const dds = ds.divided_by_integer(segments)
+  const noise_amount = 0.02 * distance
 
   let prev = source
   let lines = [source]
   for(let x = 0; x < segments; x++) {
-    prev = prev.add(ds).add(random_noise(50, 50))
-    lines.push(prev)
+    prev = prev.add(dds)
+    lines.push(prev.add(random_noise(noise_amount, noise_amount))
+	      )
   }
   lines.push(dest)
 
