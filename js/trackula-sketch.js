@@ -243,9 +243,13 @@ function SiteLine(source, dest) {
   prev = source
   for(let i = 0; i < lines.length - 1; i++) {
     line(lines[i].x, lines[i].y, lines[i + 1].x, lines[i + 1].y)
+    point(lines[i].x, lines[i].y)
+    point(lines[i + 1].x, lines[i + 1].y)
     push()
-    let r = new Mushroot(lines[i].x, lines[i].y, {startBranchLength: 40, nest: 3})
-    r.show()
+    translate(lines[i].x, lines[i].y)
+    rotate(random(-PI/3, PI/3))
+    let r = new Mushroot(0, 0, {startBranchLength: 20, nest: min(3, max(segments, 8))})
+    // r.show()
     pop()
     prev = lines[i]
   }
