@@ -38,7 +38,7 @@ function random_mushroom_image() {
 
 function Mushroot(beginX, beginY, settings) {
   let Settings = Object.assign({
-    branchColor: '#FFFFFF',
+    branchColor: 'rgba(255, 255, 255, 0.5)',
     nest: 5,
     startBranchLength: 130,
     rightBranchMagnificationRate: [0.3, 0.8],
@@ -93,7 +93,7 @@ function Mushroot(beginX, beginY, settings) {
 
   this.show = function () {
     push()
-    stroke(255, 255, 255)
+    stroke(Settings.branchColor)
     strokeWeight(2)
     branch(beginX, beginY, Settings.startBranchLength, Settings.nest)
     pop()
