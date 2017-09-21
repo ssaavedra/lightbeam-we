@@ -157,8 +157,8 @@ function stratify(history) {
 
 let defaultSettings = {
   strokeWeight: 40,
-  stroke: 'rgba(255, 255, 0, 1)',
-  lineStroke: 'rgba(255, 0, 255, 0.3)',
+  stroke: 'rgba(255, 0, 0, 1)',
+  lineStroke: 'rgba(255, 255, 255, 1)',
   lineStrokeWeight: 4,
 }
 
