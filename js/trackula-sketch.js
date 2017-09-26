@@ -403,27 +403,16 @@ function Underworld(history, position) {
 let underworld
 let sites = []
 let num_mushrooms = 6
+let history
+let placement
 
 async function setup() {
   content = await storeChild.getAll()
+  history = new History(num_mushrooms, content)
 
-  let history = new History(num_mushrooms, content)
-
-  createCanvas(window.windowWidth - 50, window.windowHeight * 1.5)
-  background(0)
-  push()
-
-  let placement = height / 4
-
-  stroke(255, 255, 255)
-  fill(255, 255, 255)
-  rect(0, 0, width, 40)
-  let mushroom_width = width / num_mushrooms
-  line(0, placement, width, placement)
+  createCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
-  underworld.show()
-  pop()
-
   noLoop()
 }
 
