@@ -236,7 +236,7 @@ function Site(position, website, history, settings) {
   this.computeReverse = function() {
     if(this.height == 0) {
       this.reverse_lines = sites.map(site => site.lines.filter(line => line.dest.equals(this.position, 1)))
-      console.log(this.reverse_lines)
+      // console.log(this.reverse_lines)
     }
   }
 
@@ -281,7 +281,7 @@ function Site(position, website, history, settings) {
       const mush_width = 150
       const mush_height = 375
       image(
-	random_mushroom_image(),
+	get_mushroom_image(this.website),
 	this.position.x - (mush_width / 2),
 	this.position.y - mush_height,
 	mush_width,
@@ -380,23 +380,31 @@ function RootStratum(_height, position, websites, base_stratum, history) {
 }
 
 function Underworld(history, position) {
-  this.position = Object.assign({x: 0, y: 0}, position)
-  const padding = 250
-
+  const padding = 150
   const strata = stratify(history)
-  const base_stratum = new RootStratum(0, this.position, strata[0], null, history)
 
-  this.strata = strata.map(
-    (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, base_stratum, history)
-  )
+  this.refit = function (position) {
+    sites = []
+    this.position = Object.assign({x: 0, y: 0}, position)
 
-  base_stratum.roots.forEach(site => site.computeReverse())
+    this.base_stratum = new RootStratum(0, this.position, strata[0], null, history)
+
+    this.strata = strata.map(
+      (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.7, index) - 1) * padding}), stratum, this.base_stratum, history)
+    )
+    
+    this.base_stratum.roots.forEach(site => site.computeReverse())
+  }
+
+
 
   this.show = function() {
     for(let stratum = this.strata.length - 1; stratum >= 0; stratum--) {
       this.strata[stratum].show()
     }
   }
+
+  this.refit(position)
 }
 
 
@@ -405,6 +413,13 @@ let sites = []
 let num_mushrooms = 6
 let history
 let placement
+
+async function windowResized() {
+  resizeCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  placement = 3 * windowHeight / 4
+  underworld.refit({y: placement})
+  draw()
+}
 
 async function setup() {
   content = await storeChild.getAll()
