@@ -30,6 +30,11 @@ function Vector() {
   this.x = this.d[0]
   this.y = this.d[1]
 
+  this.equals = function(v, err) {
+    if(!err) err = 0
+    return this.subtract(v).norm() <= err
+  }
+
   this.add = function(v) {
     return new Vector(this.x + v.x, this.y + v.y)
   }
@@ -151,7 +156,7 @@ class History {
   latestNFirstParties(content, crop) {
     return new Map(
       Object.keys(content).map((key) => [key, content[key]])
-	.filter(([key, value]) => value.firstParty)
+	.filter(([key, value]) => value.firstParty && value.thirdParties.length > 5)
 	.sort((a, b) => b[1].lastRequestTime - a[1].lastRequestTime)
 	.splice(0, crop)
     )
@@ -228,6 +233,13 @@ function Site(position, website, history, settings) {
     return new SiteLine(this.position, node.position, this.height, this.highlighted)
   })
 
+  this.computeReverse = function() {
+    if(this.height == 0) {
+      this.reverse_lines = sites.map(site => site.lines.filter(line => line.dest.equals(this.position, 1)))
+      console.log(this.reverse_lines)
+    }
+  }
+
   this.isAtPoint = function(x, y) {
     return this.visible && (this.distanceTo(x, y) < 20)
   }
@@ -302,6 +314,8 @@ let lineColors = [
 function SiteLine(source, dest, height, highlighted) {
   source = new Vector(source.x, source.y)
   dest = new Vector(dest.x, dest.y)
+  this.source = source
+  this.dest = dest
 
   const ds = dest.subtract(source)
   const distance = Math.sqrt(Math.pow(ds.x, 2) + Math.pow(ds.y, 2))
@@ -375,6 +389,8 @@ function Underworld(history, position) {
   this.strata = strata.map(
     (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.5, index) - 1) * padding}), stratum, base_stratum, history)
   )
+
+  base_stratum.roots.forEach(site => site.computeReverse())
 
   this.show = function() {
     for(let stratum = this.strata.length - 1; stratum >= 0; stratum--) {
