@@ -457,6 +457,12 @@ function draw() {
   rect(0, 0, width, height / 4)
   let mushroom_width = width / num_mushrooms
   line(0, height / 4, width, height / 4)
+  image(
+    image_bg,
+    0,
+    placement,
+    image_bg.width, image_bg.height
+  )
   if(underworld)
     underworld.show()
   pop()
