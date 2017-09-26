@@ -62,7 +62,8 @@ function Vector() {
 }
 
 let content = null
-let mushroom_images = []
+let mushroom_images = new Map()
+let image_bg = null
 
 function preload() {
   function pad(num, size){ return ('000000000' + num).substr(-size); }
@@ -73,12 +74,27 @@ function preload() {
   // mushroom_images.push(loadImage("images/mushroom-5.svg"))
   // mushroom_images.push(loadImage("images/mushroom-6.png"))
   for(let i = 1; i <= 13; i++) {
-    mushroom_images.push(loadImage("images/mushroom-" + pad(i, 2) + ".png"))
+    const path = "images/mushroom-" + pad(i, 2) + ".png"
+    const key = hex_sha1(path) + "|" + path
+    mushroom_images.set(key, loadImage(path))
   }
+  image_bg = loadImage("images/mushroom-bg.jpg")
 }
 
-function random_mushroom_image() {
-  return mushroom_images[0]
+function get_mushroom_image(url) {
+  const h = hex_sha1(url)
+
+  const mush_key = Array
+	.from(mushroom_images.keys())
+	.sort()
+	.reduce((a, sum) => {
+	  if(a > h) { return a } else { return sum }
+	}, mushroom_images[0])
+
+  const mush = mushroom_images.get(mush_key)
+
+  return mush
+  // return random(Array.from(mushroom_images.values()))
 }
 
 function Mushroot(beginX, beginY, settings) {
