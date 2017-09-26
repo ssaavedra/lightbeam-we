@@ -319,9 +319,9 @@ function random_noise(x, y) {
 let lineColors = [
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(60, 60, 0, 1)'],
-  ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(130, 130, 130, 1)'],
-  ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
+  ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
+  ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
+  ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
@@ -369,7 +369,7 @@ function SiteLine(source, dest, height, highlighted) {
       push()
       translate(lines[i].x, lines[i].y)
       rotate(random(-PI/3, PI/3))
-      let r = new Mushroot(0, 0, {startBranchLength: 20, nest: min(3, max(segments, 8))})
+      let r = new Mushroot(0, 0, {startBranchLength: 20, nest: min(4, max(segments, 8))})
       // r.show()
       pop()
       prev = lines[i]
@@ -453,10 +453,10 @@ function draw() {
 
   push()
   stroke(255, 255, 255)
-  fill(255, 255, 255)
-  rect(0, 0, width, height / 4)
+  fill(220, 255, 255)
+  rect(0, 0, width, placement)
   let mushroom_width = width / num_mushrooms
-  line(0, height / 4, width, height / 4)
+  line(0, placement, width, placement)
   image(
     image_bg,
     0,
