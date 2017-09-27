@@ -255,14 +255,20 @@ function Site(position, website, history, settings) {
   })
 
   this.computeReverse = function() {
+    this.reverse_lines = []
+
+    const concat = (x, y) => x.concat(y)
+    const flatMap = (f, xs) =>
+	  xs.map(f).reduce(concat, [])
+
     if(this.height == 0) {
-      this.reverse_lines = sites.map(site => site.lines.filter(line => line.dest.equals(this.position, 1)))
-      // console.log(this.reverse_lines)
+      this.reverse_lines = flatMap(site => site.lines.filter(line => line.dest.equals(this.position, 1)), sites)
+    } else {
     }
   }
 
   this.isAtPoint = function(x, y) {
-    return this.visible && (this.distanceTo(x, y) < 20)
+    return this.visible && (this.distanceTo(x, y) < (this.height + 1) * 20)
   }
 
   this.distanceTo = function(x, y) {
@@ -273,6 +279,9 @@ function Site(position, website, history, settings) {
   this.highlight = function(value) {
     this.highlighted = value
     this.lines.forEach(line => {
+      line.highlight(value)
+    })
+    this.reverse_lines.forEach(line => {
       line.highlight(value)
     })
   }
@@ -308,6 +317,8 @@ function Site(position, website, history, settings) {
     } else {
       const mush_width = 150
       const mush_height = 375
+      fill(0)
+      stroke(0)
       image(
 	get_mushroom_image(this.website),
 	this.position.x - (mush_width / 2),
@@ -465,6 +476,9 @@ function RootStratum(_height, position, websites, base_stratum, history) {
 	height: _height,
 	base_stratum: base_stratum,
       }))
+
+  this.roots.map(r => r.computeReverse())
+
   this.show = function() {
     this.roots.forEach(site => site.show())
   }
@@ -558,6 +572,8 @@ function mouseClicked() {
     matching[0].highlight(true)
     draw()
     matching[0].show() // Draw again to put the text in the sites over the rest
+  } else {
+    draw()
   }
 }
 
