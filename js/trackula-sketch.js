@@ -251,7 +251,7 @@ function Site(position, website, history, settings) {
   this.lines = nodes_to_connect.map(node => {
     strokeWeight(this.settings.lineStrokeWeight)
     stroke(this.settings.lineStroke)
-    return new SiteLine(this.position, node.position, this.height, this.highlighted)
+    return new SiteLine(this.position, node.position, this.height, this.highlighted, node.website)
   })
 
   this.computeReverse = function() {
@@ -370,20 +370,21 @@ function random_noise(x, y) {
 let lineColors = [
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
-  ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
-  ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 1)'],
+  ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
   ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
 ]
 
-function SiteLine(source, dest, height, highlighted) {
+function SiteLine(source, dest, height, highlighted, textOnHighlight) {
   source = new Vector(source.x, source.y)
   dest = new Vector(dest.x, dest.y)
   this.source = source
   this.dest = dest
   this.height = height
+  this.textOnHighlight = textOnHighlight || ""
 
   const ds = dest.subtract(source)
   const distance = Math.sqrt(Math.pow(ds.x, 2) + Math.pow(ds.y, 2))
@@ -427,6 +428,26 @@ function SiteLine(source, dest, height, highlighted) {
       // r.show()
       pop()
       prev = lines[i]
+    }
+
+    if(this.highlighted)
+      this.showText()
+  }
+
+  this.showText = function () {
+    let scrollPosition = last_scroll_position + 150
+
+    const ab = this.source.subtract(this.dest)
+    const m = ab.y / ab.x
+
+    const base_y = scrollPosition
+
+    const base_x = (base_y - this.source.y) / m + this.source.x
+
+    const v = new Vector(base_x, base_y)
+
+    if(v.y > this.dest.y && v.y < this.source.y) {
+      textWithBg(this.textOnHighlight, v, {})
     }
   }
 }
@@ -482,6 +503,7 @@ let sites = []
 let num_mushrooms = 6
 let history
 let placement
+let last_scroll_position = 0
 
 async function windowResized() {
   resizeCanvas(window.windowWidth - 50, window.windowHeight * 7)
@@ -540,3 +562,8 @@ function mouseClicked() {
     matching[0].show() // Draw again to put the text in the sites over the rest
   }
 }
+
+window.addEventListener('scroll', (e) => {
+  last_scroll_position = window.scrollY
+  window.requestAnimationFrame(() => draw())
+})
