@@ -506,7 +506,7 @@ let placement
 let last_scroll_position = 0
 
 async function windowResized() {
-  resizeCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  resizeCanvas(window.windowWidth - 50, window.windowHeight * 3)
   placement = 3 * windowHeight / 4
   underworld.refit({y: placement})
   draw()
@@ -517,7 +517,7 @@ async function setup() {
   history = new History(num_mushrooms, content)
 
   textFont(font_djvu)
-  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 3)
   canvas.parent('visualization')
   placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
@@ -525,9 +525,7 @@ async function setup() {
 }
 
 function draw() {
-  clear()
   background(0)
-
   push()
   stroke(255, 255, 255)
   fill(220, 255, 255)
