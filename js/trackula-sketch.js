@@ -60,6 +60,9 @@ function Vector() {
       1/n)
   }
 }
+Vector.fromObject = function(o) {
+  return new Vector(o.x, o.y)
+}
 
 let content = null
 let mushroom_images = new Map()
@@ -281,16 +284,27 @@ function Site(position, website, history, settings) {
 
     if(this.height > 0) {
       // stroke(this.settings.stroke)
-      stroke(lineColors[this.height][2])
+
       strokeWeight(this.settings.strokeWeight)
-      strokeWeight(2)
+      strokeWeight(1)
       fill(lineColors[this.height][2])
-      ellipse(this.position.x, this.position.y, this.height * 10)
-      point(this.position.x, this.position.y)
-      fill(255)
-      textSize(8)
-      strokeWeight(2)
-      text(this.website, this.position.x, this.position.y)
+      stroke(255)
+      ellipse(this.position.x, this.position.y, this.height * 20)
+
+      textWithBg(
+	this.website,
+	this.position.add({
+	  x: 0,
+	  y: 30,
+	}),
+	{
+	  strokeWeight: 2,
+	  textFill: 0,
+	  fill: 255,
+	  stroke: 255,
+	  textSize: this.highlighted ? 22 : 8,
+	}
+      )
     } else {
       const mush_width = 150
       const mush_height = 375
@@ -301,12 +315,51 @@ function Site(position, website, history, settings) {
 	mush_width,
 	mush_height
       )
-      fill(0)
-      textSize(16)
-      strokeWeight(2)
-      text(this.website, this.position.x, this.position.y)
+
+      const text_padding = min(last_scroll_position, mush_height - 20)
+
+      textWithBg(
+	this.website,
+	this.position.subtract({
+	  x: 0,
+	  y: mush_height - text_padding
+	}),
+	{}
+      )
     }
   }
+}
+
+function textWithBg(content, position, options) {
+  position = Vector.fromObject(position)
+  let settings = Object.assign({
+    fill: 'rgba(255, 255, 255, 0.7)',
+    stroke: 'rgba(255, 255, 255, 0.7)',
+    strokeWeight: 2,
+    textFill: 0,
+    textStroke: 255,
+    textSize: 16,
+    wPaddingFactor: 1.2,
+    hPaddingFactor: 2,
+  }, options)
+
+  fill(settings.fill)
+  stroke(settings.stroke)
+  strokeWeight(settings.strokeWeight)
+  textSize(settings.textSize)
+  const $tw = textWidth(content)
+  const rsizew = $tw * settings.wPaddingFactor
+  const rsizeh = textSize() * settings.hPaddingFactor
+  rect(position.x - rsizew / 2,
+       position.y - rsizeh / 1.5,
+       rsizew,
+       rsizeh,
+       10, 10, 10, 10)
+  fill(settings.textFill)
+  stroke(settings.textStroke)
+  text(content,
+       position.x - $tw / 2,
+       position.y)
 }
 
 
