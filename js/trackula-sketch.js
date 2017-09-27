@@ -330,12 +330,13 @@ function SiteLine(source, dest, height, highlighted) {
   dest = new Vector(dest.x, dest.y)
   this.source = source
   this.dest = dest
+  this.height = height
 
   const ds = dest.subtract(source)
   const distance = Math.sqrt(Math.pow(ds.x, 2) + Math.pow(ds.y, 2))
   const segments = max(1, parseInt(distance / 100))
   const dds = ds.divided_by_integer(segments)
-  const noise_amount = 0.02 * distance
+  const noise_amount = 0.025 * distance
 
   let prev = source
 
@@ -356,8 +357,10 @@ function SiteLine(source, dest, height, highlighted) {
   this.show = function () {
     const lines = this.lines
 
-    stroke(lineColors[height][this.highlighted + 0])
-    strokeWeight(1 + this.highlighted * 10)
+    stroke(lineColors[this.height][this.highlighted + 0])
+
+    const weight = 1 + this.highlighted * 10 + Math.pow(this.height / 2, 2)
+    strokeWeight(weight)
 
     let prev = source
     for(let i = 0; i < lines.length - 1; i++) {
@@ -409,8 +412,6 @@ function Underworld(history, position) {
     
     this.base_stratum.roots.forEach(site => site.computeReverse())
   }
-
-
 
   this.show = function() {
     for(let stratum = this.strata.length - 1; stratum >= 0; stratum--) {
