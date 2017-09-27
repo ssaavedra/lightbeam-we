@@ -443,8 +443,9 @@ async function setup() {
   content = await storeChild.getAll()
   history = new History(num_mushrooms, content)
 
-  createCanvas(window.windowWidth - 50, window.windowHeight * 7)
   textFont(font_djvu)
+  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  canvas.parent('visualization')
   placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
   noLoop()
