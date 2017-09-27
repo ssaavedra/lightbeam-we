@@ -64,8 +64,10 @@ function Vector() {
 let content = null
 let mushroom_images = new Map()
 let image_bg = null
+let font_djvu;
 
 function preload() {
+  font_djvu = loadFont('fonts/DejaVuSansMono-webfont.ttf')
   function pad(num, size){ return ('000000000' + num).substr(-size); }
   // mushroom_images.push(loadImage("images/mushroom-1.png"))
   // mushroom_images.push(loadImage("images/mushroom-2.png"))
@@ -442,6 +444,7 @@ async function setup() {
   history = new History(num_mushrooms, content)
 
   createCanvas(window.windowWidth - 50, window.windowHeight * 7)
+  textFont(font_djvu)
   placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
   noLoop()
