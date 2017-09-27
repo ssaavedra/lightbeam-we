@@ -267,11 +267,7 @@ function Site(position, website, history, settings) {
     return this.position.subtract(new Vector(x, y)).norm(2)
   }
 
-  this.highlight = function(value, recursive) {
-    if(!recursive) {
-      sites.map(site => site.highlight(!value, true))
-    }
-
+  this.highlight = function(value) {
     this.highlighted = value
     this.lines.forEach(line => {
       line.highlight(value)
@@ -420,6 +416,7 @@ function Underworld(history, position) {
     for(let stratum = this.strata.length - 1; stratum >= 0; stratum--) {
       this.strata[stratum].show()
     }
+    sites.filter((e) => e.highlighted).forEach((e) => e.show())
   }
 
   this.refit(position)
@@ -473,18 +470,19 @@ function draw() {
 }
 
 function mouseClicked() {
+
+  // First, de-highlight everything
+  sites.map(site => site.highlight(false))
+
   // Find whether we are over a tracker point
-  stroke(255, 255, 255)
-  strokeWeight(10)
-  // ellipse(mouseX, mouseY, 10)
   const matching = sites
 	.filter(site => site.isAtPoint(mouseX, mouseY))
 	.sort((a, b) => b.distanceTo(mouseX, mouseY) - a.distanceTo(mouseX, mouseY))
 	.reverse()
-  matching.map((site, idx) => ellipse(site.position.x, site.position.y, idx * 4))
+  // matching.map((site, idx) => ellipse(site.position.x, site.position.y, idx * 4))
   if(matching.length) {
     matching[0].highlight(true)
     draw()
-    matching[0].show()
+    matching[0].show() // Draw again to put the text in the sites over the rest
   }
 }
