@@ -67,27 +67,32 @@ Vector.fromObject = function(o) {
 let content = null
 let mushroom_images = new Map()
 let image_bg = null
+let sky_bg = null
 let font_djvu;
 
 function preload() {
   font_djvu = loadFont('fonts/DejaVuSansMono-webfont.ttf')
   function pad(num, size){ return ('000000000' + num).substr(-size); }
-  // mushroom_images.push(loadImage("images/mushroom-1.png"))
-  // mushroom_images.push(loadImage("images/mushroom-2.png"))
-  // mushroom_images.push(loadImage("images/mushroom-3.svg"))
-  // mushroom_images.push(loadImage("images/mushroom-4.png"))
-  // mushroom_images.push(loadImage("images/mushroom-5.svg"))
-  // mushroom_images.push(loadImage("images/mushroom-6.png"))
-  for(let i = 1; i <= 13; i++) {
-    const path = "images/mushroom-" + pad(i, 2) + ".png"
-    const key = hex_sha1(path) + "|" + path
-    mushroom_images.set(key, loadImage(path))
+
+  function loadBatch(type, mushroom_images, size) {
+    for(let i = 1; i <= size; i++) {
+      const path = "images/mushroom_" + type + "_" + pad(i, 2) + ".png"
+      const key = type + hex_sha1(path) + "|" + path
+      mushroom_images.set(key, loadImage(path))
+    }
   }
-  image_bg = loadImage("images/mushroom-bg.jpg")
+
+  loadBatch('li', mushroom_images, 11)
+  loadBatch('de', mushroom_images, 11)
+
+  // image_bg = loadImage("images/mushroom-bg.jpg")
+  image_bg = loadImage("images/bg-dark.png")
+  sky_bg = loadImage("images/bg-light.png")
 }
 
-function get_mushroom_image(url) {
-  const h = hex_sha1(url)
+function get_mushroom_image(site) {
+  const he = hex_sha1(site.website)
+  const h = "li" + he
 
   const mush_key = Array
 	.from(mushroom_images.keys())
@@ -244,11 +249,11 @@ function Site(position, website, history, settings) {
   const base_roots = (settings.base_stratum || {roots: []}).roots
   const my_first = (this.history.first_of.get(this.website) || []).map(e => e.hostname)
 
-  const nodes_to_connect = base_roots.filter(
+  this.nodes_to_connect = base_roots.filter(
     node => my_first.includes(node.website)
   )
 
-  this.lines = nodes_to_connect.map(node => {
+  this.lines = this.nodes_to_connect.map(node => {
     strokeWeight(this.settings.lineStrokeWeight)
     stroke(this.settings.lineStroke)
     return new SiteLine(this.position, node.position, this.height, this.highlighted, node.website)
@@ -307,20 +312,20 @@ function Site(position, website, history, settings) {
 	  y: 30,
 	}),
 	{
-	  strokeWeight: 2,
-	  textFill: 0,
-	  fill: 255,
-	  stroke: 255,
+	  //strokeWeight: 2,
+	  //textFill: 0,
+	  //fill: 255,
+	  //stroke: 255,
 	  textSize: this.highlighted ? 22 : 8,
 	}
       )
     } else {
-      const mush_width = 150
-      const mush_height = 375
+      const mush_width = 350
+      const mush_height = 477
       fill(0)
       stroke(0)
       image(
-	get_mushroom_image(this.website),
+	get_mushroom_image(this),
 	this.position.x - (mush_width / 2),
 	this.position.y - mush_height,
 	mush_width,
@@ -344,11 +349,11 @@ function Site(position, website, history, settings) {
 function textWithBg(content, position, options) {
   position = Vector.fromObject(position)
   let settings = Object.assign({
-    fill: 'rgba(255, 255, 255, 0.7)',
-    stroke: 'rgba(255, 255, 255, 0.7)',
+    fill: 'rgba(0, 0, 0, 0.7)',
+    stroke: 'rgba(0, 0, 0, 0.7)',
     strokeWeight: 2,
-    textFill: 0,
-    textStroke: 255,
+    textFill: 255,
+    textStroke: 0,
     textSize: 16,
     wPaddingFactor: 1.2,
     hPaddingFactor: 2,
@@ -514,7 +519,7 @@ function Underworld(history, position) {
 
 let underworld
 let sites = []
-let num_mushrooms = 6
+let num_mushrooms = 5
 let history
 let placement
 let last_scroll_position = 0
@@ -541,11 +546,16 @@ async function setup() {
 function draw() {
   background(0)
   push()
-  stroke(255, 255, 255)
-  fill(220, 255, 255)
-  rect(0, 0, width, placement)
+  // stroke(255, 255, 255)
+  // fill(220, 255, 255)
+  // rect(0, 0, width, placement)
+  image(
+    sky_bg,
+    0,
+    0,
+    sky_bg.width, sky_bg.height
+  )
   let mushroom_width = width / num_mushrooms
-  line(0, placement, width, placement)
   image(
     image_bg,
     0,
