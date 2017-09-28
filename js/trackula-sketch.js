@@ -273,7 +273,14 @@ function Site(position, website, history, settings) {
   }
 
   this.isAtPoint = function(x, y) {
-    return this.visible && (this.distanceTo(x, y) < (this.height + 1) * 20)
+    if(this.height == 0) {
+      x = this.position.x + this.widthpx / 2 - x
+      y = this.position.y + this.heightpx - y
+      console.log(this.website, x, y)
+      return x > 0 && y > 0 && x < this.widthpx && this.heightpx
+    } else {
+      return this.visible && (this.distanceTo(x, y) < (this.height + 1) * 20)
+    }
   }
 
   this.distanceTo = function(x, y) {
