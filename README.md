@@ -1,3 +1,17 @@
+# Trackula
+
+Trackula is a WebExtension to show you, in p5.js, an interactive
+visualization of your data migrations through the web, and how you
+interact with third-party websites.
+
+All the information will be contained in the first-run.html, which is
+(as of yet) not finished.
+
+
+# Original readme below
+
+----
+
 # Firefox Lightbeam
 This is the web extension version of the Firefox Lightbeam add-on for visualizing HTTP requests between websites in real time.
 
