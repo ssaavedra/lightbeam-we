@@ -1,7 +1,7 @@
 {
-  "name": "lightbeam-we",
-  "version": "2.0.0",
-  "description": "Firefox Lightbeam web extension",
+  "name": "trackula-we",
+  "version": "0.1.0",
+  "description": "Trackula web extension",
   "main": "background.js",
   "scripts": {
     "build": "npm install && npm run updatesubmodule && npm run createlib && web-ext build --overwrite-dest",
@@ -18,14 +18,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/lightbeam-we.git"
+    "url": "https://github.com/ssaavedra/trackula-we.git"
   },
   "author": "Mozilla",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/mozilla/lightbeam-we/issues"
+    "url": "https://github.com/ssaavedra/trackula-we/issues"
   },
-  "homepage": "https://github.com/mozilla/lightbeam-we/blob/master/README.md",
+  "homepage": "https://github.com/ssaavedra/trackula-we/blob/master/README.md",
   "dependencies": {
     "d3": "4.9.1",
     "dexie": "^2.0.0-beta",
