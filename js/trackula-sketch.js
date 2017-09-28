@@ -563,24 +563,30 @@ async function setup() {
 function draw() {
   background(0)
   push()
-  // stroke(255, 255, 255)
-  // fill(220, 255, 255)
-  // rect(0, 0, width, placement)
-  image(
-    sky_bg,
-    0,
-    0,
-    sky_bg.width, sky_bg.height
-  )
-  stroke(0)
-  line(0, placement, width, placement)
+
+  let debug = !!window.location.search.match('debug')
   let mushroom_width = width / num_mushrooms
-  image(
-    image_bg,
-    0,
-    placement,
-    image_bg.width, image_bg.height
-  )
+  if(debug) {
+    stroke(255, 255, 255)
+    fill(220, 255, 255)
+    rect(0, 0, width, placement)
+  } else {
+    image(
+      sky_bg,
+      0,
+      0,
+      sky_bg.width, sky_bg.height
+    )
+    stroke(0)
+    line(0, placement, width, placement)
+
+    image(
+      image_bg,
+      0,
+      placement,
+      image_bg.width, image_bg.height
+    )
+  }
   if(underworld)
     underworld.show()
   pop()
