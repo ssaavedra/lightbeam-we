@@ -256,7 +256,7 @@ function Site(position, website, history, settings) {
   this.lines = this.nodes_to_connect.map(node => {
     strokeWeight(this.settings.lineStrokeWeight)
     stroke(this.settings.lineStroke)
-    return new SiteLine(this.position, node.position, this.height, this.highlighted, node.website)
+    return new SiteLine(this, node, this.height, this.highlighted, node.website)
   })
 
   this.computeReverse = function() {
@@ -286,6 +286,7 @@ function Site(position, website, history, settings) {
     this.lines.forEach(line => {
       line.highlight(value)
     })
+    this.computeReverse()
     this.reverse_lines.forEach(line => {
       line.highlight(value)
     })
@@ -320,25 +321,25 @@ function Site(position, website, history, settings) {
 	}
       )
     } else {
-      const mush_width = 350
-      const mush_height = 477
+      this.widthpx = 350
+      this.heightpx = 477
       fill(0)
       stroke(0)
       image(
 	get_mushroom_image(this),
-	this.position.x - (mush_width / 2),
-	this.position.y - mush_height + 5,
-	mush_width,
-	mush_height
+	this.position.x - (this.widthpx / 2),
+	this.position.y - this.heightpx + 5,
+	this.widthpx,
+	this.heightpx
       )
 
-      const text_padding = min(last_scroll_position, mush_height - 20)
+      const text_padding = min(last_scroll_position, this.heightpx - 20)
 
       textWithBg(
 	this.website,
 	this.position.subtract({
 	  x: 0,
-	  y: mush_height - text_padding
+	  y: this.heightpx - text_padding
 	}),
 	{}
       )
@@ -404,8 +405,8 @@ let lineColors = [
 ]
 
 function SiteLine(source, dest, height, highlighted, textOnHighlight) {
-  source = new Vector(source.x, source.y)
-  dest = new Vector(dest.x, dest.y)
+  source = new Vector(source.position.x, source.position.y)
+  dest = new Vector(dest.position.x, dest.position.y)
   this.source = source
   this.dest = dest
   this.height = height
