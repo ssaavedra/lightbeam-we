@@ -5,6 +5,8 @@
     <title>Demos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/DejaVuSans.css" type="text/css" charset="utf-8" />
+    <link rel="stylesheet" href="css/Oswald.css" type="text/css" charset="utf-8" />
+    <link rel="stylesheet" href="css/Lato.css" type="text/css" charset="utf-8" />
     <link rel="stylesheet" href="css/trackula-style.css" type="text/css">
 
     <link rel="shortcut icon" href="images/lightbeam-48.png" type="image/x-icon">
@@ -23,7 +25,7 @@
       top: 20px;
       right: 20px;
       padding: 10px;
-      border-radius: 20px;
+      border-radius: 20px 0px 0px 20px;
       transition: all 0.6s ease-in-out;
       }
 
@@ -44,10 +46,18 @@
       .ranking-holder > .ranking {
       width: 0px;
       overflow-x: hidden;
+      font-family: 'Lato';
+      font-size: 1.1em;
+      }
+
+      .ranking h2 {
+      font-family: Oswald;
+      margin:0;
       }
 
       .ranking-holder:hover > .ranking {
       width: 400px;
+      padding-left: 2em;
       overflow-x: hidden;
       }
 
@@ -92,7 +102,7 @@
 	    </div>
 	    <div class="ranking">
 	      <div>
-		<p>Your most persistent trackers:</p>
+		<h2>Your most persistent trackers</h2>
 		<p>Tracker #1: 99% websites</p>
 		<p>Tracker #2: 85% websites</p>
 	      </div>

@@ -109,7 +109,7 @@ function get_mushroom_image(site) {
 
 function Mushroot(beginX, beginY, settings) {
   let Settings = Object.assign({
-    branchColor: 'rgba(255, 255, 255, 0.5)',
+    branchColor: 'rgba(255, 255, 255, 0.1)',
     nest: 5,
     startBranchLength: 130,
     rightBranchMagnificationRate: [0.3, 0.8],
@@ -182,7 +182,7 @@ class History {
   latestNFirstParties(content, crop) {
     return new Map(
       Object.keys(content).map((key) => [key, content[key]])
-	.filter(([key, value]) => value.firstParty && value.thirdParties.length > 5)
+	.filter(([key, value]) => value.firstParty && value.thirdParties.length > 7)
 	.sort((a, b) => b[1].lastRequestTime - a[1].lastRequestTime)
 	.splice(0, crop)
     )
@@ -327,7 +327,7 @@ function Site(position, website, history, settings) {
       image(
 	get_mushroom_image(this),
 	this.position.x - (mush_width / 2),
-	this.position.y - mush_height,
+	this.position.y - mush_height + 5,
 	mush_width,
 	mush_height
       )
@@ -385,7 +385,16 @@ function random_noise(x, y) {
 
 let lineColors = [
   ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
-  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(125, 125, 125, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(50, 50, 50, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
+  ['rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.6)'],
   ['rgba(130, 130, 130, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
   ['rgba(60, 60, 0, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
   ['rgba(255, 0, 0, 0.5)', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.6)'],
@@ -429,7 +438,7 @@ function SiteLine(source, dest, height, highlighted, textOnHighlight) {
 
     stroke(lineColors[this.height][this.highlighted + 0])
 
-    const weight = 1 + this.highlighted * 10 + Math.pow(this.height / 2, 2)
+    const weight = 1 + this.highlighted * 10 + Math.pow(this.height / 2, 3)
     strokeWeight(weight)
 
     let prev = source
@@ -555,6 +564,8 @@ function draw() {
     0,
     sky_bg.width, sky_bg.height
   )
+  stroke(0)
+  line(0, placement, width, placement)
   let mushroom_width = width / num_mushrooms
   image(
     image_bg,
