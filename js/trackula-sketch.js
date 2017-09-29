@@ -673,6 +673,19 @@ window.addEventListener('DOMContentLoaded', (e) => {
 
   document.getElementById('printviz').addEventListener(
     'click', (e) => {
+      resizeCanvas(1900, 2500)
+      placement = 750
+      underworld.refit({y: placement})
+      draw()
+      let image = document.getElementById('defaultCanvas0').toDataURL('image/png')
+	  .replace('image/png', 'image/octet-stream')
+
+      e.target.setAttribute('href', image)
+      e.target.setAttribute('download', 'your-trackula.pndf')
       
+      resizeCanvas(window.windowWidth - 50, window.windowHeight * 2.5)
+      placement = 3 * windowHeight / 4
+      underworld.refit({y: placement})
+      draw()
   })
 })
