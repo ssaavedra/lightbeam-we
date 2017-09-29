@@ -51,12 +51,12 @@ const trackula = {
       if (this.numFirstParties === 0) {
         numFirstPartiesElement.textContent = '';
       } else {
-        numFirstPartiesElement.textContent = `${this.numFirstParties} Sites`;
+        numFirstPartiesElement.textContent = `${this.numFirstParties} sitios`;
       }
     } else if (this.numThirdParties === 0) {
       numThirdPartiesElement.textContent = '';
     } else {
-      const str = `${this.numThirdParties} Third Party Sites`;
+      const str = `${this.numThirdParties} sitios de terceros`;
       numThirdPartiesElement.textContent = str;
     }
   },

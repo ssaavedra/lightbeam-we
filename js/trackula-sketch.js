@@ -639,8 +639,8 @@ async function drawNoticeTrackers() {
   const percent1 = trackers[0][1] * 100 / Array.from(h.first_parties.keys()).length
   const percent2 = trackers[1][1] * 100 / Array.from(h.first_parties.keys()).length
 
-  document.getElementById('trackertop1').innerHTML = '<h3>Tracker #1: '+ percent1.toFixed(1) +'% of websites</h3><p style="margin:0">' + trackers[0][0] + '</p>'
-  document.getElementById('trackertop2').innerHTML = '<h3>Tracker #2: '+ percent2.toFixed(1) +'% of websites</h3><p style="margin:0">' + trackers[1][0] + '</p>'
+  document.getElementById('trackertop1').innerHTML = '<h3>Tracker #1: '+ percent1.toFixed(1) +'% de los sitios</h3><p style="margin:0">' + trackers[0][0] + '</p>'
+  document.getElementById('trackertop2').innerHTML = '<h3>Tracker #2: '+ percent2.toFixed(1) +'% de los sitios</h3><p style="margin:0">' + trackers[1][0] + '</p>'
 
 }
 
