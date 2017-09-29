@@ -1,6 +1,6 @@
 {
   "name": "trackula-we",
-  "version": "0.1.0",
+  "version": "0.1.1alpha1",
   "description": "Trackula web extension",
   "main": "background.js",
   "scripts": {

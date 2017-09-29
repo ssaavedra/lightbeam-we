@@ -9,15 +9,37 @@
     <link rel="stylesheet" href="css/Lato.css" type="text/css" charset="utf-8" />
     <link rel="stylesheet" href="css/trackula-style.css" type="text/css">
 
-    <link rel="shortcut icon" href="images/lightbeam-48.png" type="image/x-icon">
-    <link rel="icon" href="images/lightbeam-48.png" type="image/x-icon">
+    <link rel="shortcut icon" href="images/logo-trackula-transparent-3.svg" type="image/x-icon">
+    <link rel="icon" href="images/logo-trackula-transparent-3.svg" type="image/x-icon">
     <script src="js/storeChild.js" type="text/javascript"></script>
     <script src="ext-libs/p5.min.js"></script>
     <script src="js/sha1.js"></script>
+    <script src="js/trackula-topbar.js"></script>
     <script src="js/trackula-sketch.js"></script>
     <style type="text/css">
+      body, p {
+      font-family: 'Lato';
+      }
+      
+      h1, h2, h3 {
+      font-family: Oswald;
+      margin:0;
+      }
+
+      .top-bar {
+      
+      }
+      
       .vis-content {
       position: relative;
+      }
+      
+      .radius-left {
+      border-radius: 20px 0px 0px 20px;
+      }
+
+      .radius-right {
+      border-radius: 0px 20px 20px 0px;
       }
 
       .ranking-holder {
@@ -25,7 +47,6 @@
       top: 20px;
       right: 20px;
       padding: 10px;
-      border-radius: 20px 0px 0px 20px;
       transition: all 0.6s ease-in-out;
       }
 
@@ -50,11 +71,6 @@
       font-size: 1.1em;
       }
 
-      .ranking h2 {
-      font-family: Oswald;
-      margin:0;
-      }
-
       .ranking-holder:hover > .ranking {
       width: 400px;
       padding-left: 2em;
@@ -65,6 +81,47 @@
       width: 400px;
       }
 
+      /* ****************************** */
+
+      
+      .didyouknow-holder {
+      position: absolute;
+      top: 720px;
+      left: 0px;
+      padding: 10px;
+      transition: all 0.6s ease-in-out;
+      }
+
+      .didyouknow-holder * {
+      transition: all 0.6s ease-in-out;
+      }
+
+      .didyouknow-holder {
+      background-color: rgba(255, 255, 255, 0.9);
+      }
+
+      .didyouknow-holder > div {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 1em;
+      }
+
+      .didyouknow-holder > .didyouknow {
+      width: 0px;
+      overflow-x: hidden;
+      font-size: 1.1em;
+      }
+
+      .didyouknow-holder:hover > .didyouknow {
+      width: 400px;
+      padding-left: 2em;
+      overflow-x: hidden;
+      }
+
+      .didyouknow-holder > .didyouknow > * {
+      width: 400px;
+      }
+
       .unimplemented {
       display: none;
       }
@@ -72,7 +129,11 @@
   </head>
   <body>
     <main role="main">
-      <section class="top-bar max-graph unimplemented">
+      <section class="top-bar max-graph">
+	<h1 style="font-family: Lato">
+	  <img src="images/logo-trackula-transparent-2.svg" width="40" />
+	  Trackula
+	</h1>
         <dl class="info-headings">
           <div>
             <dt>Data Gathered Since</dt>
@@ -96,19 +157,28 @@
       </section>
       <section class="vis">
         <div class="vis-content" id="visualization">
-	  <div class="ranking-holder">
+	  <div class="ranking-holder radius-left">
 	    <div class="ranking-teaser">
 	      <img width="40" height="60" src="images/flask.png" />
 	    </div>
 	    <div class="ranking">
 	      <div>
 		<h2>Your most persistent trackers</h2>
-		<p>Tracker #1: 99% websites</p>
-		<p>Tracker #2: 85% websites</p>
+		<p id="trackertop1">Tracker #1: 99% websites</p>
+		<p id="trackertop2">Tracker #2: 85% websites</p>
 	      </div>
 	    </div>
 	  </div>
           <div id="tooltip"></div>
+	  <div class="didyouknow-holder animated radius-right" id="didyouknow-holder">
+	    <div class="didyouknow">
+	      <h3>Did you know...?</h3>
+	      <p id="didyouknow-text">Lorem ipsum dolor sit amet.</p>
+	    </div>
+	    <div class="">
+	      <h3>?</h3>
+	    </div>
+	  </div>
         </div>
       </section>
     </main>

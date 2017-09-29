@@ -1,0 +1,37 @@
+body {
+    margin:0;
+}
+
+:root {
+  --primary-color: #000;
+  --secondary-color: #404850;
+  --tertiary-color: #eaeaea;
+  --button-color: #171e25;
+  --button-border-color: #12181b;
+  --button-active-color: #73a4b8;
+  --button-active-border-color: #6fc3e5;
+  --primary-text-color: #eaeaea;
+  --secondary-text-color: #73a4b8;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: var(--tertiary-color);
+  padding: 20px;
+}
+
+.top-bar > h1 * {
+    vertical-align: middle;
+}
+
+.top-bar > dl {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.top-bar > dl > div {
+  margin-right: 15px;
+}

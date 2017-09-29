@@ -69,8 +69,9 @@ let mushroom_images = new Map()
 let image_bg = null
 let sky_bg = null
 let font_djvu;
+let facts = null
 
-function preload() {
+async function preload() {
   font_djvu = loadFont('fonts/DejaVuSansMono-webfont.ttf')
   function pad(num, size){ return ('000000000' + num).substr(-size); }
 
@@ -88,11 +89,21 @@ function preload() {
   // image_bg = loadImage("images/mushroom-bg.jpg")
   image_bg = loadImage("images/bg-dark.png")
   sky_bg = loadImage("images/bg-light.png")
+
+  let _facts = await fetch('/facts.json')
+  _facts = await _facts.json()
+  facts = new Map()
+  for(let key in _facts.facts.es.categories) {
+    facts.set(key, _facts.facts.es.categories[key])
+  }
+
 }
 
 function get_mushroom_image(site) {
   const he = hex_sha1(site.website)
   const h = "li" + he
+
+  if(window.debug) return mushroom_images.values().next().value
 
   const mush_key = Array
 	.from(mushroom_images.keys())
@@ -180,12 +191,12 @@ class History {
   }
 
   latestNFirstParties(content, crop) {
-    return new Map(
-      Object.keys(content).map((key) => [key, content[key]])
+    let k = Object.keys(content).map((key) => [key, content[key]])
 	.filter(([key, value]) => value.firstParty && value.thirdParties.length > 7)
 	.sort((a, b) => b[1].lastRequestTime - a[1].lastRequestTime)
-	.splice(0, crop)
-    )
+    if(crop)
+      k = k.splice(0, crop)
+    return new Map(k)
   }
 
   findConnections() {
@@ -272,14 +283,20 @@ function Site(position, website, history, settings) {
     }
   }
 
-  this.isAtPoint = function(x, y) {
+  this.isAtPoint = function(_x, _y) {
     if(this.height == 0) {
-      x = this.position.x + this.widthpx / 2 - x
-      y = this.position.y + this.heightpx - y
-      console.log(this.website, x, y)
-      return x > 0 && y > 0 && x < this.widthpx && this.heightpx
+      const topleft = {
+	x: this.position.x - this.widthpx / 2,
+	y: this.position.y - this.heightpx
+      }
+
+      const bottomright = {
+	x: this.position.x + this.widthpx / 2,
+	y: this.position.y
+      }
+      return topleft.x < _x && _x < bottomright.x && topleft.y < _y && _y < bottomright.y
     } else {
-      return this.visible && (this.distanceTo(x, y) < (this.height + 1) * 20)
+      return this.visible && (this.distanceTo(_x, _y) < this.height * 20 + 5)
     }
   }
 
@@ -468,7 +485,7 @@ function SiteLine(source, dest, height, highlighted, textOnHighlight) {
   }
 
   this.showText = function () {
-    let scrollPosition = last_scroll_position + 150
+    let scrollPosition = last_scroll_position + 100
 
     const ab = this.source.subtract(this.dest)
     const m = ab.y / ab.x
@@ -507,7 +524,7 @@ function RootStratum(_height, position, websites, base_stratum, history) {
 }
 
 function Underworld(history, position) {
-  const padding = 150
+  const padding = 140
   const strata = stratify(history)
 
   this.refit = function (position) {
@@ -517,7 +534,7 @@ function Underworld(history, position) {
     this.base_stratum = new RootStratum(0, this.position, strata[0], null, history)
 
     this.strata = strata.map(
-      (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.7, index) - 1) * padding}), stratum, this.base_stratum, history)
+      (stratum, index) => new RootStratum(index, displace(this.position, {y: (Math.pow(1.6, index) - 1) * padding}), stratum, this.base_stratum, history)
     )
     
     this.base_stratum.roots.forEach(site => site.computeReverse())
@@ -542,7 +559,7 @@ let placement
 let last_scroll_position = 0
 
 async function windowResized() {
-  resizeCanvas(window.windowWidth - 50, window.windowHeight * 3)
+  resizeCanvas(window.windowWidth - 50, window.windowHeight * 2.5)
   placement = 3 * windowHeight / 4
   underworld.refit({y: placement})
   draw()
@@ -553,11 +570,13 @@ async function setup() {
   history = new History(num_mushrooms, content)
 
   textFont(font_djvu)
-  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 3)
+  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 2.5)
   canvas.parent('visualization')
   placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
   noLoop()
+
+  await drawNoticeTrackers()
 }
 
 function draw() {
@@ -570,6 +589,7 @@ function draw() {
     stroke(255, 255, 255)
     fill(220, 255, 255)
     rect(0, 0, width, placement)
+    window.debug = debug
   } else {
     image(
       sky_bg,
@@ -612,7 +632,42 @@ function mouseClicked() {
   }
 }
 
+async function drawNoticeTrackers() {
+  const h = new History(undefined, history.full_content)
+  const trackers = Array.from(h.first_of.keys()).map((e) => [e, h.first_of.get(e).length]).sort((a, b) => a[1] < b[1])
+
+  const percent1 = trackers[0][1] * 100 / Array.from(h.first_parties.keys()).length
+  const percent2 = trackers[1][1] * 100 / Array.from(h.first_parties.keys()).length
+
+  document.getElementById('trackertop1').innerHTML = '<h3>Tracker #1: '+ percent1.toFixed(1) +'% of websites</h3><p style="margin:0">' + trackers[0][0] + '</p>'
+  document.getElementById('trackertop2').innerHTML = '<h3>Tracker #2: '+ percent2.toFixed(1) +'% of websites</h3><p style="margin:0">' + trackers[1][0] + '</p>'
+
+}
+
+
 window.addEventListener('scroll', (e) => {
   last_scroll_position = window.scrollY
   window.requestAnimationFrame(() => draw())
+
+  Array.from(document.querySelectorAll('.didyouknow.from-left')).map((e) => {
+    const offset = parseInt(e.dataset.scrollOffset)
+    const maxleft = parseInt(e.dataset.maxLeft)
+    const curleft = window.getComputedStyle(e).left
+
+    e.style.left = Math.min(
+      maxleft,
+      Math.max(
+	parseInt(curleft),
+	window.scrollY + offset
+      )
+    ) + 'px'
+  })
+})
+
+window.addEventListener('DOMContentLoaded', (e) => {
+  document.getElementById('didyouknow-holder').addEventListener(
+    'mouseenter', (e) => {
+      const text = random(random(Array.from(facts.values())))
+      document.getElementById('didyouknow-text').innerHTML = text
+    })
 })
