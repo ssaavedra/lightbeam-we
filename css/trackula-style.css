@@ -13,6 +13,39 @@ body {
   --primary-text-color: #eaeaea;
   --secondary-text-color: #73a4b8;
 }
+button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: 10px;
+  text-align: left;
+  padding: 10px;
+  font-size: .75em;
+  border: none;
+  border-width: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--primary-text-color);
+  background-color: var(--button-color);
+  border-color: var(--button-border-color);
+  box-shadow: 0 3px 3px #12181B;
+}
+
+button:hover {
+  background-color: var(--button-active-color);
+}
+
+button::before, a.thumbs-up::before {
+  content: "";
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 15px;
+  height: 15px;
+  background-size: contain;
+  margin-right: 10px;
+}
 
 .top-bar {
   display: flex;

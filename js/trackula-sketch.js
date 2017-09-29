@@ -670,4 +670,9 @@ window.addEventListener('DOMContentLoaded', (e) => {
       const text = random(random(Array.from(facts.values())))
       document.getElementById('didyouknow-text').innerHTML = text
     })
+
+  document.getElementById('printviz').addEventListener(
+    'click', (e) => {
+      
+  })
 })
