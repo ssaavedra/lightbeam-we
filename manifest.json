@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Trackula",
-  "version": "0.1.1alpha2",
+  "version": "0.1.2",
 
   "description": "Trackula is a Firefox browser extension that uses interactive visualizations to show you the relationships between third parties and the sites you visit. It is based on Lightbeam but has an additional interface based on p5.js.",
   "homepage_url": "https://github.com/ssaavedra/trackula",
