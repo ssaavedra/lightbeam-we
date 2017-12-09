@@ -1,12 +1,14 @@
 const store = {
-  ALLOWLIST_URL: '/shavar-prod-lists/disconnect-entitylist.json',
+  ALLOWLIST_URL: '/ext-libs/disconnect-entitylist.json',
   db: null,
 
   async init() {
     if (!this.db) {
       this.makeNewDatabase();
     }
-    browser.runtime.onMessage.addListener((m) => store.messageHandler(m));
+    browser.runtime.onMessage.addListener((m) => {
+      return store.messageHandler(m);
+    });
     await this.getAllowList();
   },
 

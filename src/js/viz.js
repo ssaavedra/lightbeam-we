@@ -5,8 +5,12 @@ const viz = {
   resizeTimer: null,
   minZoom: 0.5,
   maxZoom: 1.5,
-  collisionRadius: 30,
-  tickCount: 30,
+  collisionRadius: 10,
+  chargeStrength: -100,
+  tickCount: 100,
+  canvasColor: 'white',
+  alphaTargetStart: 0.1,
+  alphaTargetStop: 0,
 
   init(nodes, links) {
     const { width, height } = this.getDimensions();
@@ -19,6 +23,7 @@ const viz = {
     this.collisionRadius = this.collisionRadius * this.scalingFactor;
     this.scale = (window.devicePixelRatio || 1) * this.scalingFactor;
     this.transform = d3.zoomIdentity;
+    this.defaultIcon = this.convertURIToImageData('images/defaultFavicon.svg');
 
     this.updateCanvas(width, height);
     this.draw(nodes, links);
@@ -36,6 +41,9 @@ const viz = {
   simulateForce() {
     if (!this.simulation) {
       this.simulation = d3.forceSimulation(this.nodes);
+      this.simulation.on('tick', () => {
+        return this.drawOnCanvas();
+      });
       this.registerSimulationForces();
     } else {
       this.simulation.nodes(this.nodes);
@@ -45,7 +53,7 @@ const viz = {
   },
 
   manualTick() {
-    this.simulation.alphaTarget(0.1);
+    this.simulation.alphaTarget(this.alphaTargetStart);
     for (let i = 0; i < this.tickCount; i++) {
       this.simulation.tick();
     }
@@ -53,18 +61,19 @@ const viz = {
   },
 
   restartSimulation() {
-    this.simulation.alphaTarget(0.1);
+    this.simulation.alphaTarget(this.alphaTargetStart);
     this.simulation.restart();
   },
 
   stopSimulation() {
-    this.simulation.alphaTarget(0);
-    this.simulation.stop();
+    this.simulation.alphaTarget(this.alphaTargetStop);
   },
 
   registerLinkForce() {
     const linkForce = d3.forceLink(this.links);
-    linkForce.id((d) => d.hostname);
+    linkForce.id((d) => {
+      return d.hostname;
+    });
     this.simulation.force('link', linkForce);
   },
 
@@ -79,6 +88,7 @@ const viz = {
     this.simulation.force('y', forceY);
 
     const chargeForce = d3.forceManyBody();
+    chargeForce.strength(this.chargeStrength);
     this.simulation.force('charge', chargeForce);
 
     const collisionForce = d3.forceCollide(this.collisionRadius);
@@ -128,30 +138,44 @@ const viz = {
     this.context.restore();
   },
 
+  getRadius(thirdPartyLength) {
+    if (thirdPartyLength > 0) {
+      if (thirdPartyLength > this.collisionRadius) {
+        return this.circleRadius + this.collisionRadius;
+      } else {
+        return this.circleRadius + thirdPartyLength;
+      }
+    }
+    return this.circleRadius;
+  },
+
   drawNodes() {
     for (const node of this.nodes) {
       const x = node.fx || node.x;
       const y = node.fy || node.y;
+      let radius;
+
       this.context.beginPath();
       this.context.moveTo(x, y);
 
-      if (node.shadow) {
-        this.drawShadow(x, y);
-      }
-
       if (node.firstParty) {
-        this.drawFirstParty(node);
+        radius = this.getRadius(node.thirdParties.length);
+        this.drawFirstParty(x, y, radius);
       } else {
-        this.drawThirdParty(node);
+        this.drawThirdParty(x, y);
       }
 
-      if (node.favicon) {
-        this.drawFavicon(node.favicon, x, y);
+      if (node.shadow) {
+        this.drawShadow(x, y, radius);
       }
 
-      this.context.fillStyle = 'white';
+      this.context.fillStyle = this.canvasColor;
       this.context.closePath();
       this.context.fill();
+
+      if (node.favicon) {
+        this.drawFavicon(node, x, y);
+      }
     }
   },
 
@@ -165,43 +189,75 @@ const viz = {
     };
   },
 
-  drawFavicon(favicon, x, y) {
-    const { side, offset } = this.getSquare();
-    const img = new Image();
-    img.src = favicon;
-    img.onload = () => {
-      this.context.drawImage(img,
-        this.transform.applyX(x) - offset,
-        this.transform.applyY(y) - offset,
-        side,
-        side);
-    };
+  convertURIToImageData(URI) {
+    return new Promise((resolve, reject) => {
+      if (!URI) {
+        return reject();
+      }
+
+      const canvas = document.createElement('canvas'),
+        context = canvas.getContext('2d'),
+        side = this.getSquare().side,
+        image = new Image();
+
+      canvas.width = side * this.scale;
+      canvas.height = side * this.scale;
+      context.fillStyle = this.canvasColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      image.onload = () => {
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return resolve(context.getImageData(0, 0, canvas.width, canvas.height));
+      };
+      image.onerror = () => {
+        return resolve(this.defaultIcon);
+      };
+      image.src = URI;
+    });
   },
 
-  drawShadow(x, y) {
+  async drawFavicon(node, x, y) {
+    const offset = this.getSquare().offset,
+      tx = this.transform.applyX(x) - offset,
+      ty = this.transform.applyY(y) - offset;
+
+    if (!node.image) {
+      node.image = await this.convertURIToImageData(node.favicon);
+    }
+
+    this.context.putImageData(node.image,
+      tx * this.scale,
+      ty * this.scale
+    );
+  },
+
+  drawShadow(x, y, radius) {
+    const lineWidth = 2,
+      shadowBlur = 15,
+      shadowRadius = 5;
     this.context.beginPath();
-    this.context.lineWidth = 6;
-    this.context.shadowColor = 'white';
-    this.context.strokeStyle = 'rgba(0,0,0,1)';
-    this.context.shadowBlur = 15;
+    this.context.lineWidth = lineWidth;
+    this.context.shadowColor = this.canvasColor;
+    this.context.strokeStyle = 'rgba(0, 0, 0, 1)';
+    this.context.shadowBlur = shadowBlur;
     this.context.shadowOffsetX = 0;
     this.context.shadowOffsetY = 0;
-    this.context.arc(x, y, this.circleRadius + 5, 0, 2 * Math.PI);
+    this.context.arc(x, y, radius + shadowRadius, 0, 2 * Math.PI);
     this.context.stroke();
     this.context.closePath();
   },
 
-  drawFirstParty(node) {
-    this.context.arc(node.x, node.y, this.circleRadius, 0, 2 * Math.PI);
+  drawFirstParty(x, y, radius) {
+    this.context.arc(x, y, radius, 0, 2 * Math.PI);
   },
 
-  drawThirdParty(node) {
+  drawThirdParty(x, y) {
     const deltaY = this.circleRadius / 2;
     const deltaX = deltaY * Math.sqrt(3);
 
-    this.context.moveTo(node.x - deltaX, node.y + deltaY);
-    this.context.lineTo(node.x, node.y - this.circleRadius);
-    this.context.lineTo(node.x + deltaX, node.y + deltaY);
+    this.context.moveTo(x - deltaX, y + deltaY);
+    this.context.lineTo(x, y - this.circleRadius);
+    this.context.lineTo(x + deltaX, y + deltaY);
   },
 
   getTooltipPosition(x, y) {
@@ -322,10 +378,18 @@ const viz = {
 
   addDrag() {
     const drag = d3.drag();
-    drag.subject(() => this.dragSubject());
-    drag.on('start', () => this.dragStart());
-    drag.on('drag', () => this.drag());
-    drag.on('end', () => this.dragEnd());
+    drag.subject(() => {
+      return this.dragSubject();
+    });
+    drag.on('start', () => {
+      return this.dragStart();
+    });
+    drag.on('drag', () => {
+      return this.drag();
+    });
+    drag.on('end', () => {
+      return this.dragEnd();
+    });
 
     d3.select(this.canvas)
       .call(drag);
@@ -334,9 +398,7 @@ const viz = {
   dragSubject() {
     const x = this.transform.invertX(d3.event.x);
     const y = this.transform.invertY(d3.event.y);
-    const node = this.getNodeAtCoordinates(x, y);
-
-    return node;
+    return this.getNodeAtCoordinates(x, y);
   },
 
   dragStart() {
@@ -353,7 +415,6 @@ const viz = {
     d3.event.subject.fy = d3.event.y;
 
     this.hideTooltip();
-    this.drawOnCanvas();
   },
 
   dragEnd() {
@@ -369,7 +430,9 @@ const viz = {
 
   addZoom() {
     const zoom = d3.zoom().scaleExtent([this.minZoom, this.maxZoom]);
-    zoom.on('zoom', () => this.zoom());
+    zoom.on('zoom', () => {
+      return this.zoom();
+    });
 
     d3.select(this.canvas)
       .call(zoom);

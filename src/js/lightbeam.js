@@ -15,12 +15,18 @@ const lightbeam = {
   async initTPToggle() {
     const toggleCheckbox
       = document.getElementById('tracking-protection-control');
+    const trackingProtection = document.getElementById('tracking-protection');
+    const trackingProtectionDisabled
+      = document.getElementById('tracking-protection-disabled');
     // Do we support setting TP
     if ('trackingProtectionMode' in browser.privacy.websites) {
-      const trackingProtection
+      trackingProtection.hidden = false;
+      trackingProtectionDisabled.hidden = true;
+
+      const trackingProtectionState
         = await browser.privacy.websites.trackingProtectionMode.get({});
       let value = true;
-      if (trackingProtection.value !== 'always') {
+      if (trackingProtectionState.value !== 'always') {
         value = false;
       }
       toggleCheckbox.checked = value;
@@ -29,7 +35,8 @@ const lightbeam = {
         browser.privacy.websites.trackingProtectionMode.set({ value });
       });
     } else {
-      document.getElementById('tracking-protection').hidden = true;
+      trackingProtection.hidden = true;
+      trackingProtectionDisabled.hidden = false;
     }
   },
 
@@ -247,14 +254,26 @@ const lightbeam = {
 
   resetData() {
     const resetData = document.getElementById('reset-data-button');
-    resetData.addEventListener('click', async () => {
-      const msgBegin = 'Pressing OK will delete all Lightbeam data. ';
-      const msgEnd = 'Are you sure?';
-      const confirmation = confirm(`${msgBegin + msgEnd}`);
-      if (confirmation) {
+    const dialog = document.getElementById('reset-data-dialog');
+    window.dialogPolyfill && window.dialogPolyfill.registerDialog(dialog);
+
+    resetData.addEventListener('click', () => {
+      dialog.showModal();
+    });
+
+    dialog.addEventListener('cancel', () => {
+      delete dialog.returnValue;
+    });
+
+    dialog.addEventListener('close', async () => {
+      if (dialog.returnValue === 'confirm') {
         await storeChild.reset();
         window.location.reload();
       }
+
+      // This is a little naive, because the dialog might not have been
+      // triggered by the reset button. But it's better than nothing.
+      resetData.focus();
     });
   },
 

@@ -47,23 +47,28 @@ const capture = {
       return;
     }
     if (this.queue.length >= 1) {
-      const nextEvent = this.queue.shift();
-      this.processingQueue = true;
-      switch (nextEvent.type) {
-        case 'sendFirstParty':
-          await this.sendFirstParty(
-            nextEvent.data.tabId,
-            nextEvent.data.changeInfo,
-            nextEvent.data.tab
-          );
-          break;
-        case 'sendThirdParty':
-          await this.sendThirdParty(nextEvent.data);
-          break;
-        default:
-          throw new Error(
-            'An event must be of type sendFirstParty or sendThirdParty.'
-          );
+      try {
+        const nextEvent = this.queue.shift();
+        this.processingQueue = true;
+        switch (nextEvent.type) {
+          case 'sendFirstParty':
+            await this.sendFirstParty(
+              nextEvent.data.tabId,
+              nextEvent.data.changeInfo,
+              nextEvent.data.tab
+            );
+            break;
+          case 'sendThirdParty':
+            await this.sendThirdParty(nextEvent.data);
+            break;
+          default:
+            throw new Error(
+              'An event must be of type sendFirstParty or sendThirdParty.'
+            );
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('Exception found in queue process', e);
       }
       this.processNextEvent(true);
     } else {
@@ -77,20 +82,37 @@ const capture = {
   async shouldStore(info) {
     const tabId = info.id || info.tabId;
     let documentUrl, privateBrowsing;
+    // Ignore container tabs as we need to store them correctly
+    //  showing a simpler graph just for default means we won't confuse users
+    //  into thinking isolation has broken
+    const defaultCookieStore = 'firefox-default';
+    if ('cookieStoreId' in info
+        && info.cookieStoreId !== defaultCookieStore) {
+      return false;
+    }
     if (this.isVisibleTab(tabId)) {
       const tab = await this.getTab(tabId);
       if (!tab) {
         return;
       }
+      if (tab.cookieStoreId !== defaultCookieStore) {
+        return false;
+      }
       documentUrl = new URL(tab.url);
       privateBrowsing = tab.incognito;
     } else {
+      // if we were not able to check the cookie store
+      // lets drop this for paranoia sake.
+      if (!('cookieStoreId' in info)) {
+        return false;
+      }
       // browser.tabs.get throws an error for nonvisible tabs (tabId = -1)
       // but some non-visible tabs can make third party requests,
       // ex: Service Workers
       documentUrl = new URL(info.originUrl);
       privateBrowsing = false;
     }
+
     // ignore about:*, moz-extension:*
     // also ignore private browsing tabs
     if (documentUrl.protocol !== 'about:'
@@ -139,7 +161,8 @@ const capture = {
       firstPartyUrl = new URL(response.originUrl);
     }
 
-    if (targetUrl.hostname !== firstPartyUrl.hostname
+    if (firstPartyUrl.hostname
+      && targetUrl.hostname !== firstPartyUrl.hostname
       && await this.shouldStore(response)) {
       const data = {
         target: targetUrl.hostname,
@@ -158,7 +181,8 @@ const capture = {
   // capture first party requests
   async sendFirstParty(tabId, changeInfo, tab) {
     const documentUrl = new URL(tab.url);
-    if (tab.status === 'complete' && await this.shouldStore(tab)) {
+    if (documentUrl.hostname
+        && tab.status === 'complete' && await this.shouldStore(tab)) {
       const data = {
         faviconUrl: tab.favIconUrl,
         firstParty: true,
