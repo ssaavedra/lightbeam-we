@@ -30,5 +30,27 @@ async function runLightbeam() {
   }
 }
 
+async function runTrackula() {
+  // Checks to see if the Trackula tab is already open.
+  // Returns true if it is, false if not.
+  async function isOpen() {
+    const tabs = await browser.tabs.query({});
+    const fullUrl = browser.extension.getURL('trackula.html');
+    const trackulaTabs = tabs.filter((tab) => {
+      return (tab.url === fullUrl);
+    });
+    return trackulaTabs[0] || false;
+  }
+
+  const trackulaTab = await isOpen();
+  if (!trackulaTab) {
+    // only open a new Lightbeam instance if one isn't already open.
+    browser.tabs.create({ url: 'trackula.html' });
+  } else if (!trackulaTab.active) {
+     // re-focus Lightbeam if it is already open but lost focus
+    browser.tabs.update(trackulaTab.id, {active: true});
+  }
+}
+
 // When the user clicks browserAction icon in toolbar, run Lightbeam
-browser.browserAction.onClicked.addListener(runLightbeam);
+browser.browserAction.onClicked.addListener(runTrackula);
