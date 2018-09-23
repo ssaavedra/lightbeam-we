@@ -7,6 +7,7 @@ const trackula = {
   async init() {
     this.websites = await storeChild.getAll();
     this.updateVars();
+    this.addListeners();
   },
 
   // Called from init() (isFirstParty = undefined)
@@ -41,6 +42,52 @@ const trackula = {
       this.numThirdParties++;
       this.setPartyVar('thirdParty');
     }
+  },
+
+  addListeners() {
+    this.downloadData();
+    this.resetData();
+  },
+
+  downloadData() {
+    const saveData = document.getElementById('save-data-button');
+    saveData.addEventListener('click', async () => {
+      const data = await storeChild.getAll();
+      const blob = new Blob([JSON.stringify(data ,' ' , 2)],
+        {type : 'application/json'});
+      const url = window.URL.createObjectURL(blob);
+      const downloading = browser.downloads.download({
+        url : url,
+        filename : 'trackula-data.json',
+        conflictAction : 'uniquify'
+      });
+      await downloading;
+    });
+  },
+
+  resetData() {
+    const resetData = document.getElementById('reset-data-button');
+    const dialog = document.getElementById('reset-data-dialog');
+    window.dialogPolyfill && window.dialogPolyfill.registerDialog(dialog);
+
+    resetData.addEventListener('click', () => {
+      dialog.showModal();
+    });
+
+    dialog.addEventListener('cancel', () => {
+      delete dialog.returnValue;
+    });
+
+    dialog.addEventListener('close', async () => {
+      if (dialog.returnValue === 'confirm') {
+        await storeChild.reset();
+        window.location.reload();
+      }
+
+      // This is a little naive, because the dialog might not have been
+      // triggered by the reset button. But it's better than nothing.
+      resetData.focus();
+    });
   },
 
   // Updates dynamic variable values in the page

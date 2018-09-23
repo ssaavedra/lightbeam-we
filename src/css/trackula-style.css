@@ -13,6 +13,7 @@ body {
   --primary-text-color: #eaeaea;
   --secondary-text-color: #73a4b8;
 }
+
 button {
   display: flex;
   align-items: center;
@@ -67,4 +68,12 @@ button::before, a.thumbs-up::before {
 
 .top-bar > dl > div {
   margin-right: 15px;
+}
+
+.top-bar nav button {
+    display: flex;
+    width: auto;
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
 }

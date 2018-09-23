@@ -570,7 +570,7 @@ async function setup() {
   history = new History(num_mushrooms, content)
 
   textFont(font_djvu)
-  const canvas = createCanvas(window.windowWidth - 50, window.windowHeight * 2.5)
+  const canvas = createCanvas(window.windowWidth - 12, window.windowHeight * 2.5)
   canvas.parent('visualization')
   placement = 3 * windowHeight / 4
   underworld = new Underworld(history, {y: placement})
@@ -681,7 +681,7 @@ window.addEventListener('DOMContentLoaded', (e) => {
 	  .replace('image/png', 'image/octet-stream')
 
       e.target.setAttribute('href', image)
-      e.target.setAttribute('download', 'your-trackula.pndf')
+      e.target.setAttribute('download', 'your-trackula.png')
       
       resizeCanvas(window.windowWidth - 50, window.windowHeight * 2.5)
       placement = 3 * windowHeight / 4

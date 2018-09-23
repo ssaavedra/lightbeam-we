@@ -154,7 +154,9 @@
             </dd>
           </div>
         </dl>
-	<nav>
+	<nav style="display: flex">
+	  <button id="save-data-button">Exporta tus datos</button>
+	  <button id="reset-data-button">Reincializa</button>
 	  <button id="printviz">Imprime tu visualización</button>
 	</nav>
       </section>
@@ -185,5 +187,23 @@
         </div>
       </section>
     </main>
+    <dialog id="reset-data-dialog" aria-labelledby="reset-data-dialog-title">
+      <form method="dialog" class="dialog-wrapper">
+        <h1 id="reset-data-dialog-title" class="dialog-title">Reset Data</h1>
+
+        <img class="dialog-icon" src="images/lightbeam_dialog_warningreset.png" alt="">
+
+        <div class="dialog-content">
+          <p>Al pulsar Reinciar se borrará toda la información de Trackula, incluyendo el historial de conexión, preferencias de usuario, lista de sitios bloqueados, etc.</p>
+          <p>Tu navegador volverá a tener una instalación recién hecha de Trackula.</p>
+        </div>
+
+        <menu class="dialog-options">
+          <button type="submit" value="" autofocus>Cancelar</button>
+          <button type="submit" value="confirm">Reiniciar</button>
+        </menu>
+      </form>
+    </dialog>
   </body>
 </html>
+
