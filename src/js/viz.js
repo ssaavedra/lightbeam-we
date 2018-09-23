@@ -9,6 +9,7 @@ const viz = {
   chargeStrength: -100,
   tickCount: 100,
   canvasColor: 'white',
+  alphaStart: 1,
   alphaTargetStart: 0.1,
   alphaTargetStop: 0,
 
@@ -23,7 +24,7 @@ const viz = {
     this.collisionRadius = this.collisionRadius * this.scalingFactor;
     this.scale = (window.devicePixelRatio || 1) * this.scalingFactor;
     this.transform = d3.zoomIdentity;
-    this.defaultIcon = this.convertURIToImageData('images/defaultFavicon.svg');
+    this.defaultIcon = this.loadImage('images/defaultFavicon.svg');
 
     this.updateCanvas(width, height);
     this.draw(nodes, links);
@@ -47,26 +48,31 @@ const viz = {
       this.registerSimulationForces();
     } else {
       this.simulation.nodes(this.nodes);
+      this.resetAlpha();
     }
     this.registerLinkForce();
-    this.manualTick();
   },
 
-  manualTick() {
-    this.simulation.alphaTarget(this.alphaTargetStart);
-    for (let i = 0; i < this.tickCount; i++) {
-      this.simulation.tick();
+  resetAlpha() {
+    const alpha = this.simulation.alpha();
+    const alphaRounded =  Math.round((1 - alpha) * 100);
+    if (alphaRounded === 100) {
+      this.simulation.alpha(this.alphaStart);
+      this.restartSimulation();
     }
-    this.stopSimulation();
+  },
+
+  resetAlphaTarget() {
+    this.simulation.alphaTarget(this.alphaTargetStart);
+    this.restartSimulation();
+  },
+
+  stopAlphaTarget() {
+    this.simulation.alphaTarget(this.alphaTargetStop);
   },
 
   restartSimulation() {
-    this.simulation.alphaTarget(this.alphaTargetStart);
     this.simulation.restart();
-  },
-
-  stopSimulation() {
-    this.simulation.alphaTarget(this.alphaTargetStop);
   },
 
   registerLinkForce() {
@@ -174,13 +180,15 @@ const viz = {
       this.context.fill();
 
       if (node.favicon) {
-        this.drawFavicon(node, x, y);
+        this.drawFavicon(node, x, y, radius);
+      } else {
+        this.drawFavicon(node, x, y, this.circleRadius);
       }
     }
   },
 
-  getSquare() {
-    const side = Math.sqrt(this.circleRadius * this.circleRadius * 2);
+  getSquare(radius) {
+    const side = Math.sqrt(radius * radius * 2);
     const offset = side * 0.5;
 
     return {
@@ -189,25 +197,16 @@ const viz = {
     };
   },
 
-  convertURIToImageData(URI) {
+  loadImage(URI) {
     return new Promise((resolve, reject) => {
       if (!URI) {
         return reject();
       }
 
-      const canvas = document.createElement('canvas'),
-        context = canvas.getContext('2d'),
-        side = this.getSquare().side,
-        image = new Image();
-
-      canvas.width = side * this.scale;
-      canvas.height = side * this.scale;
-      context.fillStyle = this.canvasColor;
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      const image = new Image();
 
       image.onload = () => {
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        return resolve(context.getImageData(0, 0, canvas.width, canvas.height));
+        return resolve(image);
       };
       image.onerror = () => {
         return resolve(this.defaultIcon);
@@ -216,16 +215,37 @@ const viz = {
     });
   },
 
-  async drawFavicon(node, x, y) {
-    const offset = this.getSquare().offset,
+  scaleFavicon(image, side) {
+    const canvas = document.createElement('canvas'),
+      context = canvas.getContext('2d');
+
+    canvas.width = side * this.scale;
+    canvas.height = side * this.scale;
+    context.fillStyle = this.canvasColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.drawImage(
+      image,
+      0,
+      0,
+      side * this.scale,
+      side * this.scale);
+
+    return context.getImageData(0, 0, canvas.width, canvas.height);
+  },
+
+  async drawFavicon(node, x, y, radius) {
+    const offset = this.getSquare(radius).offset,
+      side = this.getSquare(radius).side,
       tx = this.transform.applyX(x) - offset,
       ty = this.transform.applyY(y) - offset;
 
     if (!node.image) {
-      node.image = await this.convertURIToImageData(node.favicon);
+      node.image = await this.loadImage(node.favicon);
     }
 
-    this.context.putImageData(node.image,
+    this.context.putImageData(
+      this.scaleFavicon(node.image, side),
       tx * this.scale,
       ty * this.scale
     );
@@ -403,7 +423,7 @@ const viz = {
 
   dragStart() {
     if (!d3.event.active) {
-      this.restartSimulation();
+      this.resetAlphaTarget();
     }
     d3.event.subject.shadow = true;
     d3.event.subject.fx = d3.event.subject.x;
@@ -419,7 +439,7 @@ const viz = {
 
   dragEnd() {
     if (!d3.event.active) {
-      this.stopSimulation();
+      this.stopAlphaTarget();
     }
     d3.event.subject.x = d3.event.subject.fx;
     d3.event.subject.y = d3.event.subject.fy;
