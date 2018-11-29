@@ -36,7 +36,7 @@ const capture = {
       });
 
     browser.runtime.onMessage.addListener(
-      (message, sender, sendResponse) => {
+      (message, sender) => {
         const eventDetails = {
           type: 'userInteraction',
           data: {
@@ -44,12 +44,12 @@ const capture = {
             tab: sender.tab,
             message
           }
-        }
+        };
 
-        this.queue.push(eventDetails)
-        this.processNextEvent()
+        this.queue.push(eventDetails);
+        this.processNextEvent();
       }
-    )
+    );
   },
 
   // Process each HTTP request or tab page load in order,
@@ -212,7 +212,7 @@ const capture = {
   },
 
   async userInteraction({tab, message}) {
-    const documentUrl = new URL(tab.url)
+    const documentUrl = new URL(tab.url);
     if (documentUrl.hostname
     && tab.status === 'complete' && await this.shouldStore(tab)) {
       const data = {
@@ -220,8 +220,8 @@ const capture = {
         firstParty: true,
         requestTime: Date.now(),
         message: message
-      }
-      await store.addUserInteraction(documentUrl.hostname, data)
+      };
+      await store.addUserInteraction(documentUrl.hostname, data);
     }
   }
 };

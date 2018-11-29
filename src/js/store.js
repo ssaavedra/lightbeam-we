@@ -288,8 +288,8 @@ const store = {
           }
           break;
         case 'addUserInteraction':
-          website.userInteractions = (website.userInteractions || [])
-          website.userInteractions.push(value)
+          website.userInteractions = (website.userInteractions || []);
+          website.userInteractions.push(value);
           break;
         default:
           website[key] = value;
@@ -424,11 +424,11 @@ const store = {
       throw new Error('addUserInteraction requires a valid origin argument');
     }
 
-    const firstParty = await this.getWebsite(origin);
-    const responseData = await this.setWebsite(origin, {
-      "addUserInteraction": data
-    })
-    this.updateChild(this.outputWebsite(origin, responseData))
+    const responseData = await this.setWebsite(
+      origin,
+      { 'addUserInteraction': data}
+    );
+    this.updateChild(this.outputWebsite(origin, responseData));
   },
 
   isFirstPartyLinkedToThirdParty(firstParty, thirdPartyHostname) {
