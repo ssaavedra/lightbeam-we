@@ -1,6 +1,6 @@
 stages:
 - build
-image: node:latest
+image: node:lts-alpine
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -11,8 +11,9 @@ cache:
 Build WebExtension:
   stage: build
   script:
+    - apk add git
     - npm install
-    - CURRENT_VERSION=$(git describe --tags | sed 's/^v//')
+    - CURRENT_VERSION=$(git describe --tags | sed -e 's/^v//')
     - |
       # Replace hardcoded version for actual git-based version
       sed -E -i 's/^(\s+)"version":.*,$/$1"version": "'"$CURRENT_VERSION"'",' package.json
