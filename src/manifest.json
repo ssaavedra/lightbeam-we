@@ -40,5 +40,12 @@
       "js/capture.js",
       "js/background.js"
     ]
+  },
+
+  "content_scripts": [
+  {
+    "matches": ["<all_urls>"],
+    "js": ["js/interaction_grabber.js"]
   }
+]
 }

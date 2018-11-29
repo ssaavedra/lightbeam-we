@@ -168,6 +168,7 @@ const store = {
       firstPartyHostnames: website.firstPartyHostnames || false,
       firstParty: !!website.firstParty,
       lastRequestTime: website.lastRequestTime,
+      userInteractions: website.userInteractions || [],
       thirdParties: []
     };
     if ('thirdPartyHostnames' in website) {
@@ -285,6 +286,10 @@ const store = {
           if (value) {
             website.isVisible = value;
           }
+          break;
+        case 'addUserInteraction':
+          website.userInteractions = (website.userInteractions || [])
+          website.userInteractions.push(value)
           break;
         default:
           website[key] = value;
@@ -411,6 +416,19 @@ const store = {
     if (shouldUpdate) {
       this.updateChild(this.outputWebsite(target, responseData));
     }
+  },
+
+
+  async addUserInteraction(origin, data) {
+    if (!origin) {
+      throw new Error('addUserInteraction requires a valid origin argument');
+    }
+
+    const firstParty = await this.getWebsite(origin);
+    const responseData = await this.setWebsite(origin, {
+      "addUserInteraction": data
+    })
+    this.updateChild(this.outputWebsite(origin, responseData))
   },
 
   isFirstPartyLinkedToThirdParty(firstParty, thirdPartyHostname) {

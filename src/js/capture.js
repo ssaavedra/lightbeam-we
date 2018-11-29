@@ -34,6 +34,22 @@ const capture = {
         this.queue.push(eventDetails);
         this.processNextEvent();
       });
+
+    browser.runtime.onMessage.addListener(
+      (message, sender, sendResponse) => {
+        const eventDetails = {
+          type: 'userInteraction',
+          data: {
+            url: sender.url,
+            tab: sender.tab,
+            message
+          }
+        }
+
+        this.queue.push(eventDetails)
+        this.processNextEvent()
+      }
+    )
   },
 
   // Process each HTTP request or tab page load in order,
@@ -60,6 +76,9 @@ const capture = {
             break;
           case 'sendThirdParty':
             await this.sendThirdParty(nextEvent.data);
+            break;
+          case 'userInteraction':
+            await this.userInteraction(nextEvent.data);
             break;
           default:
             throw new Error(
@@ -189,6 +208,20 @@ const capture = {
         requestTime: Date.now()
       };
       await store.setFirstParty(documentUrl.hostname, data);
+    }
+  },
+
+  async userInteraction({tab, message}) {
+    const documentUrl = new URL(tab.url)
+    if (documentUrl.hostname
+    && tab.status === 'complete' && await this.shouldStore(tab)) {
+      const data = {
+        faviconUrl: tab.favIconUrl,
+        firstParty: true,
+        requestTime: Date.now(),
+        message: message
+      }
+      await store.addUserInteraction(documentUrl.hostname, data)
     }
   }
 };
