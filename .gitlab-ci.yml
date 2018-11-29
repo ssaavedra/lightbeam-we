@@ -1,0 +1,28 @@
+stages:
+- build
+image: node:latest
+
+# This folder is cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+cache:
+  paths:
+  - node_modules/
+
+Build WebExtension:
+  stage: build
+  script:
+    - npm install
+    - CURRENT_VERSION=$(git describe --tags | sed 's/^v//')
+    - |
+      # Replace hardcoded version for actual git-based version
+      sed -E -i 's/^(\s+)"version":.*,$/$1"version": "'"$CURRENT_VERSION"'",' package.json
+      sed -E -i 's/^(\s+)"version":.*,$/$1"version": "'"$CURRENT_VERSION"'",' src/manifest.json
+    - npm run build
+    - |
+      # Rename extension to xpi for Firefox
+      for f in src/web-ext-artifacts/*.zip; do
+      cp -- "$f" "${f%.zip}.xpi"
+  artifacts:
+    paths:
+      - src/web-ext-artifacts/*.xpi
+    expire_in: 1 month
